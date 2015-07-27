@@ -33,9 +33,9 @@ if __name__ == '__main__':
     worksheet_list = sh.worksheets()
     for worksheet in worksheet_list:
         if worksheet.title == 'template':
-            next
+            continue
         engineers = worksheet.col_values(1)[1:]
-        print "Gathering info for %s worksheet, engineers: %s" % (worksheet.title, engineers)
+        print "Gathering info for '%s' worksheet, engineers: %s" % (worksheet.title, engineers)
         ppl = GerritUsers(engineers)
         fixes = ppl.fixes(start_date, report_date, branch)
         for engineer in fixes:
