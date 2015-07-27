@@ -37,6 +37,7 @@ if __name__ == '__main__':
         print "Gathering info for '%s' worksheet, engineers: %s" % (worksheet.title, engineers)
         ppl = GerritUsers(engineers)
         fixes = ppl.fixes(start_date, report_date, branch)
+        worksheet.update_cell(1, 1, "Report date: %s" % report_date)
         for engineer in fixes:
             print "Updating worksheet info for %s" % engineer
             cell = worksheet.find(engineer)
