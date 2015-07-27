@@ -22,8 +22,7 @@ credentials = SignedJwtAssertionCredentials(
     ),
 )
 
-
-
+#########################
 if __name__ == '__main__':
     # Login with your Google account
     gc = gspread.authorize(credentials)
