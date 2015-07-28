@@ -35,23 +35,26 @@ class GerritUsers:
             fixes[user]['open_this_week'] = 0
             fixes[user]['open_last_week'] = 0
             for project in projects:
-              changes = rest.get(template % (project, user))
-              for change in changes:
-                  if change['branch'] != branch or change['status'] == 'ABANDONED':
-                      continue
-                  if change['created'] > start_date and change['created'] < report_date:
-                      if change['status'] == 'MERGED':
-                          fixes[user]['merged'] += 1
-                          if change['updated'] > str(one_week_ago_date):
-                              fixes[user]['merged_this_week'] += 1
-                          elif change['created'] > str(two_weeks_ago_date):
-                              fixes[user]['merged_last_week'] += 1
-                      else:
-                          fixes[user]['open'] += 1
-                          if change['created'] > str(one_week_ago_date):
-                              fixes[user]['open_this_week'] += 1
-                          elif change['created'] > str(two_weeks_ago_date):
-                              fixes[user]['open_last_week'] += 1
+                try:
+                    changes = rest.get(template % (project, user))
+                except:
+                    changes = []
+                for change in changes:
+                    if change['branch'] != branch or change['status'] == 'ABANDONED':
+                        continue
+                    if change['created'] > start_date and change['created'] < report_date:
+                        if change['status'] == 'MERGED':
+                            fixes[user]['merged'] += 1
+                            if change['updated'] > str(one_week_ago_date):
+                                fixes[user]['merged_this_week'] += 1
+                            elif change['created'] > str(two_weeks_ago_date):
+                                fixes[user]['merged_last_week'] += 1
+                        else:
+                            fixes[user]['open'] += 1
+                            if change['created'] > str(one_week_ago_date):
+                                fixes[user]['open_this_week'] += 1
+                            elif change['created'] > str(two_weeks_ago_date):
+                                fixes[user]['open_last_week'] += 1
         return fixes
 
 
