@@ -16,27 +16,28 @@ engineers['partner'] = ['aarzhanov', 'igajsin']
 class GerritUsers:
     def __init__(self, users):
         self.users = users
+        self.rest = GerritRestAPI(url='https://review.openstack.org')
 
     def fixes(self, start_date, report_date, branch):
         fixes = {}
         one_week_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=1)
         two_weeks_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=2)
 
-        rest = GerritRestAPI(url='https://review.openstack.org')
         projects = ['^stackforge/fuel-.*', '^stackforge/python-fuel.*']
         template = '/changes/?q=project:%s+owner:".*<%s@mirantis.com>"+message:"bug:+"'
+        url = 'https://review.openstack.org/#/c/%s'
 
         for user in self.users:
             fixes[user] = {}
-            fixes[user]['merged'] = 0
-            fixes[user]['merged_this_week'] = 0
-            fixes[user]['merged_last_week'] = 0
-            fixes[user]['open'] = 0
-            fixes[user]['open_this_week'] = 0
-            fixes[user]['open_last_week'] = 0
+            fixes[user]['merged'] = []
+            fixes[user]['merged_this_week'] = []
+            fixes[user]['merged_last_week'] = []
+            fixes[user]['open'] = []
+            fixes[user]['open_this_week'] = []
+            fixes[user]['open_last_week'] = []
             for project in projects:
                 try:
-                    changes = rest.get(template % (project, user))
+                    changes = self.rest.get(template % (project, user))
                 except:
                     changes = []
                 for change in changes:
@@ -44,17 +45,17 @@ class GerritUsers:
                         continue
                     if change['created'] > start_date and change['created'] < report_date:
                         if change['status'] == 'MERGED':
-                            fixes[user]['merged'] += 1
+                            fixes[user]['merged'].append(url % change['_number'])
                             if change['updated'] > str(one_week_ago_date):
-                                fixes[user]['merged_this_week'] += 1
+                                fixes[user]['merged_this_week'].append(url % change['_number'])
                             elif change['created'] > str(two_weeks_ago_date):
-                                fixes[user]['merged_last_week'] += 1
+                                fixes[user]['merged_last_week'].append(url % change['_number'])
                         else:
-                            fixes[user]['open'] += 1
+                            fixes[user]['open'].append(url % change['_number'])
                             if change['created'] > str(one_week_ago_date):
-                                fixes[user]['open_this_week'] += 1
+                                fixes[user]['open_this_week'].append(url % change['_number'])
                             elif change['created'] > str(two_weeks_ago_date):
-                                fixes[user]['open_last_week'] += 1
+                                fixes[user]['open_last_week'].append(url % change['_number'])
         return fixes
 
 
@@ -64,5 +65,4 @@ if __name__ == '__main__':
         print "# %s" % group
         ppl = GerritUsers(engineers[group])
         fixes = ppl.fixes(start_date, report_date, branch)
-
 
