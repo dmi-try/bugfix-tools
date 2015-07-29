@@ -1,5 +1,6 @@
 from launchpadlib.launchpad import Launchpad
 import datetime
+import pickle
 
 print datetime.datetime.now()
 
@@ -18,7 +19,7 @@ class LpUsers:
         self.users = users
         self.launchpad = Launchpad.login_anonymously('just testing', 'production', cachedir)
 
-    def bugs(self, start_date, report_date, ms):
+    def bugs(self, start_date, report_date, ms, cachedir = "~/.launchpadlib/cache_reports/"):
         bugs = {}
         one_week_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=1)
         two_weeks_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=2)
@@ -27,6 +28,16 @@ class LpUsers:
             bugs[user] = {}
             bugs[user]['fixed'] = []
             bugs[user]['closed'] = []
+            cache_filename = "%s/%s_%s_%s_%s.dat" % (cachedir, user, report_date, start_date, ms)
+            # Getting info from LP may take forever, so let's use something like cache
+            try:
+                cache_file = open(cache_filename, 'rb')
+                bugs[user] = pickle.load(cache_file)
+                cache_file.close()
+                continue
+            except:
+                pass
+            # Don't fail if user does not exist in LP. We'll just put 0 bug fixed for such users.
             try:
                 p = self.launchpad.people.getByEmail(email="%s@mirantis.com" % user)
                 list_of_bugs = p.searchTasks(status=["New", "Incomplete", "Invalid",
@@ -37,7 +48,6 @@ class LpUsers:
                                      milestone="https://api.launchpad.net/1.0/fuel/+milestone/%s" % ms)
             except:
                 continue
-
             for bug in list_of_bugs:
                 bug_milestone = '{0}'.format(bug.milestone).split('/')[-1]
                 if bug.assignee is not None and bug.assignee.name == user and bug_milestone == ms:
@@ -53,6 +63,14 @@ class LpUsers:
                             #if bug.status in ["Invalid", "Won't Fix"]:
                                 #bugs[user]['closed'].append(bug.web_link)
                                 #print "Closed: %s" % bug.web_link
+
+            # Getting info from LP may take forever, so let's use something like cache
+            try:
+                cache_file = open(cache_filename, 'wb')
+                pickle.dump(bugs[user], cache_file)
+                cache_file.close()
+            except:
+                pass
 
         return bugs
 

@@ -1,6 +1,5 @@
 from pygerrit.rest import GerritRestAPI
 import datetime
-import argparse
 
 start_date = '2015-06-22'
 report_date = '2015-07-25'

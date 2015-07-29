@@ -1,11 +1,9 @@
 import datetime
 import argparse
 import gspread
-from pygerrit.rest import GerritRestAPI
 from gerrit import GerritUsers
 from lp import LpUsers
 from oauth2client.client import SignedJwtAssertionCredentials
-from launchpadlib.launchpad import Launchpad
 
 start_date = '2015-06-22'
 branch = 'master'
@@ -75,7 +73,7 @@ def main():
             print "Gathering LP bugs fixed info for '%s' worksheet, engineers: %s" % (worksheet, engineers)
             bugs = {}
             lp_ppl = LpUsers(engineers)
-            bugs[worksheet] = lp_ppl.bugs(start_date, args.report_date, ms)
+            bugs[worksheet] = lp_ppl.bugs(start_date, args.report_date, ms, cachedir='/var/tmp/.launchpadlib')
 
     # Another login session with our Google account to avoid 502 errors due to timeouts
     bug_gc = gspread.authorize(credentials)
@@ -83,7 +81,7 @@ def main():
     # Now we can update LP google doc in a separate loop to avoid google doc timeouts
     bugs_sh = bug_gc.open_by_key(BugsSpreadsheetKey)
     for worksheet in patches_worksheets:
-        print "Godin to update %s spreadsheet in Google LP doc" % worksheet
+        print "Going to update %s spreadsheet in Google LP doc" % worksheet
         # Let's check LP bugs ws and create it if it's missing
         try:
             bugs_worksheet = bugs_sh.worksheet(worksheet)
