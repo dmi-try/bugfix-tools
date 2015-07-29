@@ -28,6 +28,13 @@ credentials = SignedJwtAssertionCredentials(
 )
 
 #########################
+def safe_method(method, *args):
+    for i in range(0,10):
+        try:
+            return method(*args)
+        except:
+            pass
+
 def main():
     parser = argparse.ArgumentParser(description='Deploy OpenStack and run Fuel health check.')
     parser.add_argument('report_date', type=str, help="Report date.", nargs='?',
@@ -42,57 +49,49 @@ def main():
     patches_sh = gc.open_by_key(PatchesSpreadsheetKey)
 
     # Let's gather patches info and build patches_worksheets dict
-    # which will be used in LP doc later
     patches_worksheet_list = patches_sh.worksheets()
     patches_worksheets = {}
     for worksheet in patches_worksheet_list:
-        if worksheet.title == 'template':
+        if worksheet.title != 'bugfix-team':
             continue
         # Get list of engineers from Patches worksheet
         patches_worksheets[worksheet.title] = []
         engineers = worksheet.col_values(1)[1:]
         patches_worksheets[worksheet.title].append(engineers)
-        print "Gathering gerrit reviews info for '%s' worksheet, engineers: %s" % (worksheet.title, engineers)
-        ppl = GerritUsers(engineers)
-        fixes = ppl.fixes(start_date, args.report_date, branch)
-        # Now let's update worksheets
-        worksheet.update_cell(1, 1, "Report date: %s" % args.report_date)
-        for engineer in fixes:
-            print "Updating worksheet info for %s" % engineer
-            cell = worksheet.find(engineer)
-            worksheet.update_cell(cell.row, cell.col + 1, len(fixes[engineer]['open']))
-            worksheet.update_cell(cell.row, cell.col + 2, len(fixes[engineer]['merged']))
-            worksheet.update_cell(cell.row, cell.col + 3, len(fixes[engineer]['open_this_week']))
-            worksheet.update_cell(cell.row, cell.col + 4, len(fixes[engineer]['merged_this_week']))
-            worksheet.update_cell(cell.row, cell.col + 5, len(fixes[engineer]['open_last_week']))
-            worksheet.update_cell(cell.row, cell.col + 6, len(fixes[engineer]['merged_last_week']))
 
-    # Let's gather LP info now, it can take a while
-    for worksheet in patches_worksheets:
-        for engineers in patches_worksheets[worksheet]:
-            print "Gathering LP bugs fixed info for '%s' worksheet, engineers: %s" % (worksheet, engineers)
+    # Let's gather herrit and LP info now, it can take a while
+    for ws in patches_worksheets:
+        for engineers in patches_worksheets[ws]:
+            fixes = {}
+            print "Gathering gerrit reviews info for '%s' worksheet, engineers: %s" % (ws, engineers)
+            ppl = GerritUsers(engineers)
+            fixes[ws] = ppl.fixes(start_date, args.report_date, branch)
+            print "Gathering LP bugs fixed info for '%s' worksheet, engineers: %s" % (ws, engineers)
             bugs = {}
             lp_ppl = LpUsers(engineers)
-            bugs[worksheet] = lp_ppl.bugs(start_date, args.report_date, ms, cachedir='/var/tmp/.launchpadlib')
+            bugs[ws] = lp_ppl.bugs(start_date, args.report_date, ms, cachedir='/var/tmp/.launchpadlib')
 
     # Another login session with our Google account to avoid 502 errors due to timeouts
-    bug_gc = gspread.authorize(credentials)
+    second_gc = gspread.authorize(credentials)
 
-    # Now we can update LP google doc in a separate loop to avoid google doc timeouts
-    bugs_sh = bug_gc.open_by_key(BugsSpreadsheetKey)
-    for worksheet in patches_worksheets:
-        print "Going to update %s spreadsheet in Google LP doc" % worksheet
-        # Let's check LP bugs ws and create it if it's missing
-        try:
-            bugs_worksheet = bugs_sh.worksheet(worksheet)
-        except:
-            bugs_worksheet = bugs_sh.add_worksheet(title=worksheet, rows="100", cols="20")
-        bugs_worksheet.update_cell(1, 1, "Report date: %s" % args.report_date)
-        for engineer in bugs[worksheet]:
-            print "Updating worksheet info for %s" % engineer
-            cell = bugs_worksheet.find(engineer)
-            bugs_worksheet.update_cell(1, cell.col + 1, 'Assigned bugs fixed')
-            bugs_worksheet.update_cell(cell.row, cell.col + 1, len(bugs[worksheet][engineer]['fixed']))
+    # Now we can update google doc
+    second_sh = second_gc.open_by_key(PatchesSpreadsheetKey)
+    for ws in patches_worksheets:
+        # Now let's update patches worksheet
+        worksheet = second_sh.worksheet(ws)
+        safe_method(worksheet.update_cell, 1, 1, "Report date: %s" % args.report_date)
+        safe_method(worksheet.update_cell, 1, 8, 'Assigned bugs fixed')
+        for engineers in patches_worksheets[ws]:
+            for engineer in engineers:
+                print "Updating worksheet info for %s" % engineer
+                cell = safe_method(worksheet.find, engineer)
+                safe_method(worksheet.update_cell, cell.row, cell.col + 1, len(fixes[ws][engineer]['open']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 2, len(fixes[ws][engineer]['merged']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 3, len(fixes[ws][engineer]['open_this_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 4, len(fixes[ws][engineer]['merged_this_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 5, len(fixes[ws][engineer]['open_last_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(fixes[ws][engineer]['merged_last_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(bugs[ws][engineer]['fixed']))
 
 #########################
 
