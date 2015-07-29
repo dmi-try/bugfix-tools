@@ -52,7 +52,7 @@ def main():
     patches_worksheet_list = patches_sh.worksheets()
     patches_worksheets = {}
     for worksheet in patches_worksheet_list:
-        if worksheet.title != 'bugfix-team':
+        if worksheet.title == 'template':
             continue
         # Get list of engineers from Patches worksheet
         patches_worksheets[worksheet.title] = []
