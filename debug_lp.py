@@ -9,6 +9,7 @@ ms = '7.0'
 
 parser = argparse.ArgumentParser(description='Debug LP bugs fixes stats.')
 parser.add_argument('user', type=str, help="Mirantis username")
+parser.add_argument("-d", "--debug", help="Additional debug", action="store_true")
 args = parser.parse_args()
 user = args.user
 print "Checking user %s@mirantis.com" % user
@@ -26,8 +27,9 @@ list_of_bugs = p.searchTasks(status=["New", "Incomplete", "Invalid",
 fixed = 0
 for bug in list_of_bugs:
     bug_milestone = '{0}'.format(bug.milestone).split('/')[-1]
-    print "Checking bug %s, milestone %s, assignee %s" % (bug.web_link, bug_milestone, bug.assignee.name)
-    if bug.assignee is not None and bug.assignee.name == user and bug_milestone == ms:
+    if args.debug:
+        print "Checking bug %s, milestone %s, assignee %s" % (bug.web_link, bug_milestone, bug.assignee.name)
+    if bug.assignee is not None and bug.assignee.name == p.name:
         print "Found bug assigned to %s: %s" % (user, bug.web_link)
         for task in bug.bug.bug_tasks:
             milestone = '{0}'.format(task.milestone_link).split('/')[-1]
@@ -36,8 +38,8 @@ for bug in list_of_bugs:
                         and str(task.date_fix_committed) < report_date) or \
                       (bug.status == "Fix Released" and str(task.date_fix_released) > start_date \
                       and str(task.date_fix_released) < report_date):
-                    print "FIXED: %s" % bug.web_link
-                    fixed += 1
+                          print "FIXED %s %s" % (task.importance, bug.web_link)
+                          fixed += 1
 
 print "TOTAL FIXED in %s: %s" % (ms, fixed)
 

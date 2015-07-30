@@ -26,8 +26,8 @@ class LpUsers:
 
         for user in self.users:
             bugs[user] = {}
-            bugs[user]['fixed'] = []
-            bugs[user]['closed'] = []
+            bugs[user]['high'] = []
+            bugs[user]['other'] = []
             # Getting info from LP may take forever, so let's use something like cache
             cache_filename = "%s/%s_%s_%s_%s.dat" % (cachedir, user, report_date, start_date, ms)
             try:
@@ -50,7 +50,7 @@ class LpUsers:
                 continue
             for bug in list_of_bugs:
                 bug_milestone = '{0}'.format(bug.milestone).split('/')[-1]
-                if bug.assignee is not None and bug.assignee.name == user and bug_milestone == ms:
+                if bug.assignee is not None and bug.assignee.name == p.name:
                     for task in bug.bug.bug_tasks:
                         milestone = '{0}'.format(task.milestone_link).split('/')[-1]
                         if milestone == ms:
@@ -58,11 +58,12 @@ class LpUsers:
                                     and str(task.date_fix_committed) < report_date) or \
                                   (bug.status == "Fix Released" and str(task.date_fix_released) > start_date \
                                   and str(task.date_fix_released) < report_date):
-                                bugs[user]['fixed'].append(bug.web_link)
-                                #print "Fixed:  %s" % bug.web_link
-                            #if bug.status in ["Invalid", "Won't Fix"]:
-                                #bugs[user]['closed'].append(bug.web_link)
-                                #print "Closed: %s" % bug.web_link
+                                      if bug.web_link not in bugs[user]['high'] and \
+                                          bug.web_link not in bugs[user]['other']:
+                                          if task.importance in ['High', 'Critical']:
+                                              bugs[user]['high'].append(bug.web_link)
+                                          else:
+                                              bugs[user]['other'].append(bug.web_link)
 
             # Getting info from LP may take forever, so let's use something like cache
             try:

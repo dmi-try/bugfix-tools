@@ -96,7 +96,8 @@ def main():
         safe_method(worksheet.update_cell, 1, 5, "Gerrit bugfixes merged\n%s / %s" % (one_week_ago, report_week))
         safe_method(worksheet.update_cell, 1, 6, "Gerrit bugfixes proposed\n%s / %s" % (two_weeks_ago, one_week_ago))
         safe_method(worksheet.update_cell, 1, 7, "Gerrit bugfixes merged\n%s / %s" % (two_weeks_ago, one_week_ago))
-        safe_method(worksheet.update_cell, 1, 8, 'Assigned LP bugs\nFixed')
+        safe_method(worksheet.update_cell, 1, 8, 'Assigned LP bugs\nCrit/High Fixed')
+        safe_method(worksheet.update_cell, 1, 9, 'Assigned LP bugs\nOther Fixed')
         for engineers in patches_worksheets[ws]:
             for engineer in engineers:
                 print "Updating worksheet info for %s" % engineer
@@ -107,7 +108,8 @@ def main():
                 safe_method(worksheet.update_cell, cell.row, cell.col + 4, len(fixes[ws][engineer]['merged_this_week']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 5, len(fixes[ws][engineer]['open_last_week']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(fixes[ws][engineer]['merged_last_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(bugs[ws][engineer]['fixed']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(bugs[ws][engineer]['high']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 8, len(bugs[ws][engineer]['other']))
 
 #########################
 
