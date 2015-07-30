@@ -1,5 +1,6 @@
 from pygerrit.rest import GerritRestAPI
 import datetime
+import pickle
 
 start_date = '2015-06-22'
 report_date = '2015-07-25'
@@ -17,7 +18,7 @@ class GerritUsers:
         self.users = users
         self.rest = GerritRestAPI(url='https://review.openstack.org')
 
-    def fixes(self, start_date, report_date, branch):
+    def fixes(self, start_date, report_date, branch, cachedir = "~/.gerrit"):
         fixes = {}
         one_week_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=1)
         two_weeks_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=2)
@@ -34,6 +35,16 @@ class GerritUsers:
             fixes[user]['open'] = []
             fixes[user]['open_this_week'] = []
             fixes[user]['open_last_week'] = []
+            # Let's use something like cache to no overload gerrit API and improve performance
+            cache_filename = "%s/%s_%s_%s_%s.grc" % (cachedir, user, report_date, start_date, ms)
+            try:
+                cache_file = open(cache_filename, 'rb')
+                fixes[user] = pickle.load(cache_file)
+                cache_file.close()
+                continue
+            except:
+                pass
+
             for project in projects:
                 try:
                     changes = self.rest.get(template % (project, user))
@@ -55,6 +66,15 @@ class GerritUsers:
                                 fixes[user]['open_this_week'].append(url % change['_number'])
                             elif change['created'] > str(two_weeks_ago_date):
                                 fixes[user]['open_last_week'].append(url % change['_number'])
+
+            # Let's use something like cache to no overload gerrit API and improve performance
+            try:
+                cache_file = open(cache_filename, 'wb')
+                pickle.dump(fixes[user], cache_file)
+                cache_file.close()
+            except:
+                pass
+
         return fixes
 
 

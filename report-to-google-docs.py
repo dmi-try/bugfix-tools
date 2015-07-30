@@ -76,7 +76,7 @@ def main():
         for engineers in patches_worksheets[ws]:
             print "Gathering gerrit reviews info for '%s' worksheet, engineers: %s" % (ws, engineers)
             ppl = GerritUsers(engineers)
-            fixes[ws] = ppl.fixes(start_date, args.report_date, branch)
+            fixes[ws] = ppl.fixes(start_date, args.report_date, branch, cachedir="/var/tmp/.gerrit")
             print "Gathering LP bugs fixed info for '%s' worksheet, engineers: %s" % (ws, engineers)
             lp_ppl = LpUsers(engineers)
             bugs[ws] = lp_ppl.bugs(start_date, args.report_date, ms, cachedir='/var/tmp/.launchpadlib')

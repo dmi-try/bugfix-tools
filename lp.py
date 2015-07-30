@@ -28,8 +28,8 @@ class LpUsers:
             bugs[user] = {}
             bugs[user]['fixed'] = []
             bugs[user]['closed'] = []
-            cache_filename = "%s/%s_%s_%s_%s.dat" % (cachedir, user, report_date, start_date, ms)
             # Getting info from LP may take forever, so let's use something like cache
+            cache_filename = "%s/%s_%s_%s_%s.dat" % (cachedir, user, report_date, start_date, ms)
             try:
                 cache_file = open(cache_filename, 'rb')
                 bugs[user] = pickle.load(cache_file)
