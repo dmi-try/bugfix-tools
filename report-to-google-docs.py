@@ -71,7 +71,7 @@ def main():
         engineers = worksheet.col_values(1)[1:]
         patches_worksheets[worksheet.title].append(engineers)
 
-    # Let's gather herrit and LP info now, it can take a while
+    # Let's gather gerrit and LP info now, it can take a while
     for ws in patches_worksheets:
         for engineers in patches_worksheets[ws]:
             print "Gathering gerrit reviews info for '%s' worksheet, engineers: %s" % (ws, engineers)
@@ -90,11 +90,13 @@ def main():
         # Now let's update patches worksheet
         worksheet = second_sh.worksheet(ws)
         safe_method(worksheet.update_cell, 1, 1, "Report date: %s" % report_week)
-        safe_method(worksheet.update_cell, 1, 4, "Proposed\n%s / %s" % (one_week_ago, report_week))
-        safe_method(worksheet.update_cell, 1, 5, "Merged\n%s / %s" % (one_week_ago, report_week))
-        safe_method(worksheet.update_cell, 1, 6, "Proposed\n%s / %s" % (two_weeks_ago, one_week_ago))
-        safe_method(worksheet.update_cell, 1, 7, "Merged\n%s / %s" % (two_weeks_ago, one_week_ago))
-        safe_method(worksheet.update_cell, 1, 8, 'Assigned bugs fixed')
+        safe_method(worksheet.update_cell, 1, 2, "Gerrit bugfixes proposed\nTotally")
+        safe_method(worksheet.update_cell, 1, 3, "Gerrit bugfixes merged\nTotally")
+        safe_method(worksheet.update_cell, 1, 4, "Gerrit bugfixes proposed\n%s / %s" % (one_week_ago, report_week))
+        safe_method(worksheet.update_cell, 1, 5, "Gerrit bugfixes merged\n%s / %s" % (one_week_ago, report_week))
+        safe_method(worksheet.update_cell, 1, 6, "Gerrit bugfixes proposed\n%s / %s" % (two_weeks_ago, one_week_ago))
+        safe_method(worksheet.update_cell, 1, 7, "Gerrit bugfixes merged\n%s / %s" % (two_weeks_ago, one_week_ago))
+        safe_method(worksheet.update_cell, 1, 8, 'Assigned LP bugs\nFixed')
         for engineers in patches_worksheets[ws]:
             for engineer in engineers:
                 print "Updating worksheet info for %s" % engineer
