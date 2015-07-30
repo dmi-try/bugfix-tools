@@ -22,7 +22,7 @@ class LpUsers:
         else:
             self.launchpad = Launchpad.login_anonymously('just testing', 'production', cachedir)
 
-    def bugs(self, start_date, report_date, ms, cachedir = "~/.launchpadlib/cache_reports/"):
+    def bugs(self, start_date, report_date, ms, cachedir = "~/.launchpadlib/cache_reports/", projects = ['fuel', 'mos']):
         bugs = {}
         one_week_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=1)
         two_weeks_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=2)
@@ -52,7 +52,12 @@ class LpUsers:
             except:
                 continue
             for bug in list_of_bugs:
+                if bug.milestone == None:
+                    continue
+                project = '{0}'.format(bug.milestone).split('/')[-3]
                 bug_milestone = '{0}'.format(bug.milestone).split('/')[-1]
+                if project not in projects:
+                    continue
                 if bug.assignee is not None and bug.assignee.name == p.name:
                     for task in bug.bug.bug_tasks:
                         milestone = '{0}'.format(task.milestone_link).split('/')[-1]

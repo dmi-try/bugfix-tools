@@ -37,14 +37,18 @@ list_of_bugs = p.searchTasks(status=["New", "Incomplete", "Invalid",
                                  "Won't Fix", "Confirmed", "Triaged",
                                  "In Progress", "Fix Committed",
                                  "Fix Released", "Opinion", "Expired"],
-                     modified_since=start_date,
-                     milestone="https://api.launchpad.net/1.0/fuel/+milestone/%s" % ms)
+                     modified_since=start_date)
 
 fixed = 0
 for bug in list_of_bugs:
+    if bug.milestone == None:
+        continue
+    project = '{0}'.format(bug.milestone).split('/')[-3]
     bug_milestone = '{0}'.format(bug.milestone).split('/')[-1]
+    if project not in ['fuel', 'mos']:
+        continue
     if args.debug:
-        print "Checking bug %s, milestone %s, assignee %s" % (bug.web_link, bug_milestone, bug.assignee.name)
+        print "Checking bug %s, project %s, milestone %s, assignee %s" % (bug.web_link, project, bug_milestone, bug.assignee.name)
     if bug.assignee is not None and bug.assignee.name == p.name:
         if args.debug:
             print "Found bug assigned to %s: %s" % (user, bug.web_link)
@@ -55,9 +59,10 @@ for bug in list_of_bugs:
                         and str(task.date_fix_committed) < report_date) or \
                       (bug.status == "Fix Released" and str(task.date_fix_released) > start_date \
                       and str(task.date_fix_released) < report_date):
-                          print "FIXED %s %s" % (task.importance, bug.web_link)
-                          if 'kilo' in bug.bug.tags:
-                              print 'KILO'
+                          info = str(task.importance)
+                          if 'tricky' in bug.bug.tags:
+                              info.append(', Tricky')
+                          print "%s %s" % (info, bug.web_link)
                           fixed += 1
 
 print "TOTAL FIXED between %s and %s: %s" % (start_date, report_date, fixed)
