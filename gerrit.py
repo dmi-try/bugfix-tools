@@ -36,7 +36,7 @@ class GerritUsers:
             fixes[user]['open_this_week'] = []
             fixes[user]['open_last_week'] = []
             # Let's use something like cache to no overload gerrit API and improve performance
-            cache_filename = "%s/%s_%s_%s_%s.grc" % (cachedir, user, report_date, start_date, ms)
+            cache_filename = "%s/%s_%s_%s_%s.grc" % (cachedir, user, report_date, start_date, branch)
             try:
                 cache_file = open(cache_filename, 'rb')
                 fixes[user] = pickle.load(cache_file)
