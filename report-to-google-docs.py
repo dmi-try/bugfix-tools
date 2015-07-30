@@ -61,13 +61,13 @@ def main():
     # Open worksheet from spreadsheet
     patches_sh = gc.open_by_key(SpreadsheetKey)
 
-    # Let's gather patches info and build patches_worksheets dict
+    # Let's gather engineers info and build patches_worksheets dict
     patches_worksheet_list = patches_sh.worksheets()
     patches_worksheets = {}
     for worksheet in patches_worksheet_list:
         if worksheet.title == 'template':
             continue
-        # Get list of engineers from Patches worksheet
+        # getting list of engineers from worksheet
         patches_worksheets[worksheet.title] = []
         engineers = worksheet.col_values(1)[1:]
         patches_worksheets[worksheet.title].append(engineers)
@@ -88,7 +88,7 @@ def main():
     # Now we can update google doc
     second_sh = second_gc.open_by_key(SpreadsheetKey)
     for ws in patches_worksheets:
-        # Now let's update patches worksheet
+        # updating every worksheet
         worksheet = second_sh.worksheet(ws)
         safe_method(worksheet.update_cell, 1, 1, "Report date: %s" % report_week)
         safe_method(worksheet.update_cell, 1, 2, "Gerrit bugfixes proposed\nTotally")
@@ -101,6 +101,7 @@ def main():
         safe_method(worksheet.update_cell, 1, 9, 'Assigned LP bugs\nOther Fixed')
         for engineers in patches_worksheets[ws]:
             for engineer in engineers:
+                # updating info for every engineer
                 print "Updating worksheet info for %s" % engineer
                 cell = safe_method(worksheet.find, engineer)
                 safe_method(worksheet.update_cell, cell.row, cell.col + 1, len(fixes[ws][engineer]['open']))
