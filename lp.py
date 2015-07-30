@@ -15,9 +15,12 @@ engineers['service'] = ['mgrygoriev', 'sflorczak', 'pstefanski', 'tjaroszewski']
 engineers['partner'] = ['aarzhanov', 'igajsin']
 
 class LpUsers:
-    def __init__(self, users, cachedir = "~/.launchpadlib/cache/"):
+    def __init__(self, users, cachedir = "~/.launchpadlib/cache/", login = False):
         self.users = users
-        self.launchpad = Launchpad.login_anonymously('just testing', 'production', cachedir)
+        if login:
+            self.launchpad = Launchpad.login_with('kpi bugfix', 'production', cachedir)
+        else:
+            self.launchpad = Launchpad.login_anonymously('just testing', 'production', cachedir)
 
     def bugs(self, start_date, report_date, ms, cachedir = "~/.launchpadlib/cache_reports/"):
         bugs = {}
@@ -29,7 +32,7 @@ class LpUsers:
             bugs[user]['high'] = []
             bugs[user]['other'] = []
             # Getting info from LP may take forever, so let's use something like cache
-            cache_filename = "%s/%s_%s_%s_%s.dat" % (cachedir, user, report_date, start_date, ms)
+            cache_filename = "%s/%s_%s_%s_%s.lp" % (cachedir, user, report_date, start_date, ms)
             try:
                 cache_file = open(cache_filename, 'rb')
                 bugs[user] = pickle.load(cache_file)

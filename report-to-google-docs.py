@@ -40,6 +40,7 @@ def main():
     parser = argparse.ArgumentParser(description='Deploy OpenStack and run Fuel health check.')
     parser.add_argument('report_date', type=str, help="Report date.", nargs='?',
             default = datetime.datetime.now().strftime("%Y-%m-%d"))
+    parser.add_argument("-l", "--login", help="Login", action="store_true")
     args = parser.parse_args()
 
     # Let's caclulate report dates, we need fridays since we publish bugfix report on fridays
@@ -78,7 +79,7 @@ def main():
             ppl = GerritUsers(engineers)
             fixes[ws] = ppl.fixes(start_date, args.report_date, branch, cachedir="/var/tmp/.gerrit")
             print "Gathering LP bugs fixed info for '%s' worksheet, engineers: %s" % (ws, engineers)
-            lp_ppl = LpUsers(engineers)
+            lp_ppl = LpUsers(engineers, login = args.login)
             bugs[ws] = lp_ppl.bugs(start_date, args.report_date, ms, cachedir='/var/tmp/.launchpadlib')
 
     # Another login session with our Google account to avoid 502 errors due to timeouts

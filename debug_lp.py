@@ -1,20 +1,26 @@
 #!/usr/bin/env python
+import pickle
 import argparse
 from launchpadlib.launchpad import Launchpad
 
 cachedir = "~/.launchpadlib/cache/"
-report_date = '2015-07-25'
+report_date = '2015-07-30'
 start_date = '2015-06-22'
 ms = '7.0'
 
 parser = argparse.ArgumentParser(description='Debug LP bugs fixes stats.')
 parser.add_argument('user', type=str, help="Mirantis username")
 parser.add_argument("-d", "--debug", help="Additional debug", action="store_true")
+parser.add_argument("-l", "--login", help="Login", action="store_true")
 args = parser.parse_args()
 user = args.user
-print "Checking user %s@mirantis.com" % user
 
-launchpad = Launchpad.login_anonymously('just testing', 'production', cachedir)
+if args.login:
+    launchpad = Launchpad.login_with('kpi debug', 'production', cachedir)
+else:
+    launchpad = Launchpad.login_anonymously('just testing', 'production', cachedir)
+
+print "Checking user %s@mirantis.com" % user
 p = launchpad.people.getByEmail(email="%s@mirantis.com" % user)
 print "Found user %s (%s)" % (p.display_name, p.name)
 list_of_bugs = p.searchTasks(status=["New", "Incomplete", "Invalid",
