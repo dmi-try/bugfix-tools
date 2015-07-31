@@ -33,10 +33,7 @@ p = launchpad.people.getByEmail(email="%s@mirantis.com" % user)
 if args.debug:
     print "Found user %s (%s)" % (p.display_name, p.name)
 
-list_of_bugs = p.searchTasks(status=["New", "Incomplete", "Invalid",
-                                 "Won't Fix", "Confirmed", "Triaged",
-                                 "In Progress", "Fix Committed",
-                                 "Fix Released", "Opinion", "Expired"],
+list_of_bugs = p.searchTasks(status=["In Progress", "Fix Committed", "Fix Released"],
                      modified_since=start_date)
 
 fixed = 0
@@ -55,15 +52,16 @@ for bug in list_of_bugs:
         for task in bug.bug.bug_tasks:
             milestone = '{0}'.format(task.milestone_link).split('/')[-1]
             if milestone == ms:
-                if (bug.status == "Fix Committed" and str(task.date_fix_committed) > start_date \
-                        and str(task.date_fix_committed) < report_date) or \
-                      (bug.status == "Fix Released" and str(task.date_fix_released) > start_date \
-                      and str(task.date_fix_released) < report_date):
-                          info = str(task.importance)
-                          if 'tricky' in bug.bug.tags:
-                              info.append(', Tricky')
-                          print "%s %s" % (info, bug.web_link)
-                          fixed += 1
+                   if bug.status == "Fix Committed":
+                       fixed_date = str(task.date_fix_committed)
+                   if bug.status == "Fix Released":
+                       fixed_date = str(task.date_fix_released)
+                   if fixed_date > start_date and fixed_date < report_date:
+                       info = str(task.importance)
+                       if 'tricky' in bug.bug.tags:
+                           info.append(', Tricky')
+                       print "%s %s" % (info, bug.web_link)
+                       fixed += 1
 
 print "TOTAL FIXED between %s and %s: %s" % (start_date, report_date, fixed)
 

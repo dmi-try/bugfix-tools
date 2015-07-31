@@ -28,11 +28,9 @@ class LpUsers:
         two_weeks_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=2)
 
         for user in self.users:
-            bugs[user] = {}
-            bugs[user]['high'] = []
-            bugs[user]['other'] = []
+            bugs[user] = []
             # Getting info from LP may take forever, so let's use something like cache
-            cache_filename = "%s/%s_%s_%s_%s.lp" % (cachedir, user, report_date, start_date, ms)
+            cache_filename = "%s/%s_%s_%s_%s.lpc" % (cachedir, user, report_date, start_date, ms)
             try:
                 cache_file = open(cache_filename, 'rb')
                 bugs[user] = pickle.load(cache_file)
@@ -43,12 +41,8 @@ class LpUsers:
             # Don't fail if user does not exist in LP. We'll just put 0 bug fixed for such users.
             try:
                 p = self.launchpad.people.getByEmail(email="%s@mirantis.com" % user)
-                list_of_bugs = p.searchTasks(status=["New", "Incomplete", "Invalid",
-                                                 "Won't Fix", "Confirmed", "Triaged",
-                                                 "In Progress", "Fix Committed",
-                                                 "Fix Released", "Opinion", "Expired"],
-                                     modified_since=start_date,
-                                     milestone="https://api.launchpad.net/1.0/fuel/+milestone/%s" % ms)
+                list_of_bugs = p.searchTasks(status=["In Progress", "Fix Committed", "Fix Released"],
+                                     modified_since=start_date)
             except:
                 continue
             for bug in list_of_bugs:
@@ -62,16 +56,18 @@ class LpUsers:
                     for task in bug.bug.bug_tasks:
                         milestone = '{0}'.format(task.milestone_link).split('/')[-1]
                         if milestone == ms:
-                            if (bug.status == "Fix Committed" and str(task.date_fix_committed) > start_date \
-                                    and str(task.date_fix_committed) < report_date) or \
-                                  (bug.status == "Fix Released" and str(task.date_fix_released) > start_date \
-                                  and str(task.date_fix_released) < report_date):
-                                      if bug.web_link not in bugs[user]['high'] and \
-                                          bug.web_link not in bugs[user]['other']:
-                                          if task.importance in ['High', 'Critical']:
-                                              bugs[user]['high'].append(bug.web_link)
-                                          else:
-                                              bugs[user]['other'].append(bug.web_link)
+                            if bug.status == "Fix Committed":
+                                fixed_date = str(task.date_fix_committed)
+                            if bug.status == "Fix Released":
+                                fixed_date = str(task.date_fix_released)
+                            if fixed_date > start_date and fixed_date < report_date:
+                                if not any(tmp['web_link'] == bug.web_link for tmp in bugs[user]):
+                                    mybug = {}
+                                    mybug['web_link'] = bug.web_link
+                                    mybug['importance'] = task.importance
+                                    mybug['tags'] = bug.bug.tags
+                                    mybug['fixed_date'] = fixed_date
+                                    bugs[user].append(mybug)
 
             # Getting info from LP may take forever, so let's use something like cache
             try:

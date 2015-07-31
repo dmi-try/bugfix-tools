@@ -14,9 +14,9 @@ engineers['partner'] = ['aarzhanov', 'igajsin']
 
 ##########################
 class GerritUsers:
-    def __init__(self, users):
+    def __init__(self, users, url = 'https://review.openstack.org'):
         self.users = users
-        self.rest = GerritRestAPI(url='https://review.openstack.org')
+        self.rest = GerritRestAPI(url=url)
 
     def fixes(self, start_date, report_date, branch, cachedir = "~/.gerrit"):
         fixes = {}

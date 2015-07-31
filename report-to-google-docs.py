@@ -65,7 +65,7 @@ def main():
     patches_worksheet_list = patches_sh.worksheets()
     patches_worksheets = {}
     for worksheet in patches_worksheet_list:
-        if worksheet.title == 'template':
+        if worksheet.title == 'template' or worksheet.title == 'template proposal':
             continue
         # getting list of engineers from worksheet
         patches_worksheets[worksheet.title] = []
@@ -102,6 +102,19 @@ def main():
         for engineers in patches_worksheets[ws]:
             for engineer in engineers:
                 # updating info for every engineer
+                high_bugs = 0
+                other_bugs = 0
+                high_tricky_bugs = 0
+                other_tricky_bugs = 0
+                for bug in bugs[ws][engineer]:
+                    if bug['importance'] in ['Critical', 'High']:
+                        high_bugs += 1
+                        if 'tricky' in bug['tags']:
+                            high_tricky_bugs += 1
+                    else:
+                        other_bugs += 1
+                        if 'tricky' in bug['tags']:
+                            other_tricky_bugs += 1
                 print "Updating worksheet info for %s" % engineer
                 cell = safe_method(worksheet.find, engineer)
                 safe_method(worksheet.update_cell, cell.row, cell.col + 1, len(fixes[ws][engineer]['open']))
@@ -110,8 +123,8 @@ def main():
                 safe_method(worksheet.update_cell, cell.row, cell.col + 4, len(fixes[ws][engineer]['merged_this_week']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 5, len(fixes[ws][engineer]['open_last_week']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(fixes[ws][engineer]['merged_last_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(bugs[ws][engineer]['high']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 8, len(bugs[ws][engineer]['other']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 7, high_bugs)
+                safe_method(worksheet.update_cell, cell.row, cell.col + 8, other_bugs)
 
 #########################
 
