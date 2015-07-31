@@ -1,3 +1,4 @@
 .google_key.p12
 .google_key.pem
 *.pyc
+zzz.*
