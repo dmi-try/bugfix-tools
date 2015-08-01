@@ -47,12 +47,12 @@ def main():
     # Let's caclulate report dates, we need fridays since we publish bugfix report on fridays
     # but we use saturday as report_date in order to use '<' in date strings comparision.
     report_day = datetime.datetime.strptime(args.report_date, '%Y-%m-%d')
-    last_sat = report_day - datetime.timedelta(days=report_day.weekday()) + \
-            datetime.timedelta(days=5, weeks=-1)
-    prelast_sat = last_sat - datetime.timedelta(weeks=1)
+    last_sun = report_day - datetime.timedelta(days=report_day.weekday()) + \
+            datetime.timedelta(days=6, weeks=-1)
+    prelast_sun = last_sun - datetime.timedelta(weeks=1)
     print report_day
-    print last_sat
-    print prelast_sat
+    print last_sun
+    print prelast_sun
 
     # Login with your Google account
     gc = gspread.authorize(credentials)
@@ -64,7 +64,7 @@ def main():
     patches_worksheet_list = patches_sh.worksheets()
     patches_worksheets = {}
     for worksheet in patches_worksheet_list:
-        if worksheet.title != 'template proposal':
+        if worksheet.title == 'template':
             continue
         # getting list of engineers from worksheet
         patches_worksheets[worksheet.title] = []
@@ -80,9 +80,9 @@ def main():
             print "Gathering LP bugs fixed info for '%s' worksheet, engineers: %s" % (ws, engineers)
             lp_ppl = LpUsers(engineers, login = args.login)
             # Get info from start to last Sat and cache it for future
-            bugs_last[ws] = lp_ppl.bugs(start_date, last_sat.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.launchpadlib')
+            bugs_last[ws] = lp_ppl.bugs(start_date, last_sun.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.launchpadlib')
             # Get info for current week and cache it separately
-            bugs_cur[ws] = lp_ppl.bugs(last_sat.strftime('%Y-%m-%d'), report_day.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.curlaunchpadlib')
+            bugs_cur[ws] = lp_ppl.bugs(last_sun.strftime('%Y-%m-%d'), report_day.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.curlaunchpadlib')
 
     # Another login session with our Google account to avoid 502 errors due to timeouts
     second_gc = gspread.authorize(credentials)
@@ -97,36 +97,36 @@ def main():
             for engineer in engineers:
                 # updating info for every engineer
                 # calculating bugs
-                current_week_bugs = 0
-                last_week_bugs = 0
-                inprogress_bugs = 0
-                total_bugs = 0
+                current_week_bugs = []
+                last_week_bugs = []
+                inprogress_bugs = []
+                total_bugs = []
                 for bug in bugs_last[ws][engineer] + bugs_cur[ws][engineer]:
                     print "%s %s %s %s" % (bug['web_link'], bug['importance'], bug['status'], bug['change_date'])
                     if bug['importance'] in ['Critical', 'High']:
-                        if bug['change_date'] >= last_sat.strftime('%Y-%m-%d'):
+                        if bug['change_date'][:10] >= last_sun.strftime('%Y-%m-%d'):
                             if bug['status'] in ["Fix Committed", "Fix Released"]:
-                                total_bugs +=1
-                                current_week_bugs += 1
+                                total_bugs.append(bug['web_link'])
+                                current_week_bugs.append(bug['web_link'])
                             elif bug['status'] == "In Progress":
-                                inprogress_bugs += 1
-                        elif bug['change_date'] >= prelast_sat.strftime('%Y-%m-%d'):
+                                inprogress_bugs.append(bug['web_link'])
+                        elif bug['change_date'][:10] >= prelast_sun.strftime('%Y-%m-%d'):
                             if bug['status'] in ["Fix Committed", "Fix Released"]:
-                                total_bugs += 1
-                                last_week_bugs += 1
+                                total_bugs.append(bug['web_link'])
+                                last_week_bugs.append(bug['web_link'])
                         else:
-                            total_bugs += 1
+                            total_bugs.append(bug['web_link'])
 
                 print "Updating worksheet info for %s" % engineer
                 cell = safe_method(worksheet.find, engineer)
                 safe_method(worksheet.update_cell, cell.row, cell.col + 1, len(fixes[ws][engineer]['open_this_week']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 2, len(fixes[ws][engineer]['merged_this_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 3, inprogress_bugs)
-                safe_method(worksheet.update_cell, cell.row, cell.col + 4, current_week_bugs)
+                safe_method(worksheet.update_cell, cell.row, cell.col + 3, len(inprogress_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 4, len(current_week_bugs))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 5, len(fixes[ws][engineer]['merged_last_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 6, last_week_bugs)
+                safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(last_week_bugs))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(fixes[ws][engineer]['merged']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 8, total_bugs)
+                safe_method(worksheet.update_cell, cell.row, cell.col + 8, len(total_bugs))
 #                safe_method(worksheet.update_cell, cell.row, cell.col + 7, high_bugs)
 #                safe_method(worksheet.update_cell, cell.row, cell.col + 8, other_bugs)
 

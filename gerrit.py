@@ -20,8 +20,10 @@ class GerritUsers:
 
     def fixes(self, start_date, report_date, branch, cachedir = "~/.gerrit"):
         fixes = {}
-        one_week_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=1)
-        two_weeks_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=2)
+        report_day = datetime.datetime.strptime(report_date, '%Y-%m-%d')
+        last_sun = report_day - datetime.timedelta(days=report_day.weekday()) + \
+                datetime.timedelta(days=6, weeks=-1)
+        prelast_sun = last_sun - datetime.timedelta(weeks=1)
 
         projects = ['^stackforge/fuel-.*', '^stackforge/python-fuel.*']
         template = '/changes/?q=project:%s+owner:".*<%s@mirantis.com>"+message:"bug:+"'
@@ -32,9 +34,7 @@ class GerritUsers:
             fixes[user]['merged'] = []
             fixes[user]['merged_this_week'] = []
             fixes[user]['merged_last_week'] = []
-            fixes[user]['open'] = []
             fixes[user]['open_this_week'] = []
-            fixes[user]['open_last_week'] = []
             # Let's use something like cache to no overload gerrit API and improve performance
             cache_filename = "%s/%s_%s_%s_%s.grc" % (cachedir, user, report_date, start_date, branch)
             try:
@@ -56,16 +56,13 @@ class GerritUsers:
                     if change['created'] > start_date and change['created'] < report_date:
                         if change['status'] == 'MERGED':
                             fixes[user]['merged'].append(url % change['_number'])
-                            if change['updated'] > str(one_week_ago_date):
+                            if change['updated'][:10] > str(last_sun)[:10]:
                                 fixes[user]['merged_this_week'].append(url % change['_number'])
-                            elif change['created'] > str(two_weeks_ago_date):
+                            elif change['created'][:10] > str(prelast_sun)[:10]:
                                 fixes[user]['merged_last_week'].append(url % change['_number'])
                         else:
-                            fixes[user]['open'].append(url % change['_number'])
-                            if change['created'] > str(one_week_ago_date):
+                            if change['created'][:10] > str(last_sun)[:10]:
                                 fixes[user]['open_this_week'].append(url % change['_number'])
-                            elif change['created'] > str(two_weeks_ago_date):
-                                fixes[user]['open_last_week'].append(url % change['_number'])
 
             # Let's use something like cache to no overload gerrit API and improve performance
             try:
@@ -76,7 +73,6 @@ class GerritUsers:
                 pass
 
         return fixes
-
 
 if __name__ == '__main__':
     for group in engineers:
