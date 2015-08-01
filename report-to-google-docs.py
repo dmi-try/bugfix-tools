@@ -50,9 +50,11 @@ def main():
     last_sun = report_day - datetime.timedelta(days=report_day.weekday()) + \
             datetime.timedelta(days=6, weeks=-1)
     prelast_sun = last_sun - datetime.timedelta(weeks=1)
-    print report_day
-    print last_sun
-    print prelast_sun
+    last_mon = last_sun + datetime.timedelta(days=1)
+    print "Report day: %s" % report_day
+    print "Last Monday: %s" % last_mon
+    print "Last Sunday: %s" % last_sun
+    print "Pre-last Sunday: %s" % prelast_sun
 
     # Login with your Google account
     gc = gspread.authorize(credentials)
@@ -79,8 +81,8 @@ def main():
             fixes[ws] = ppl.fixes(start_date, report_day.strftime('%Y-%m-%d'), branch, cachedir="/var/tmp/.gerrit")
             print "Gathering LP bugs fixed info for '%s' worksheet, engineers: %s" % (ws, engineers)
             lp_ppl = LpUsers(engineers, login = args.login)
-            # Get info from start to last Sat and cache it for future
-            bugs_last[ws] = lp_ppl.bugs(start_date, last_sun.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.launchpadlib')
+            # Get info from start to last Sun and cache it for future
+            bugs_last[ws] = lp_ppl.bugs(start_date, last_mon.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.launchpadlib')
             # Get info for current week and cache it separately
             bugs_cur[ws] = lp_ppl.bugs(last_sun.strftime('%Y-%m-%d'), report_day.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.curlaunchpadlib')
 
