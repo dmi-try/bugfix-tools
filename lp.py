@@ -56,17 +56,20 @@ class LpUsers:
                     for task in bug.bug.bug_tasks:
                         milestone = '{0}'.format(task.milestone_link).split('/')[-1]
                         if milestone == ms:
+                            if bug.status == "In Progress":
+                                change_date = str(task.date_in_progress)
                             if bug.status == "Fix Committed":
-                                fixed_date = str(task.date_fix_committed)
+                                change_date = str(task.date_fix_committed)
                             if bug.status == "Fix Released":
-                                fixed_date = str(task.date_fix_released)
-                            if fixed_date > start_date and fixed_date < report_date:
+                                change_date = str(task.date_fix_released)
+                            if change_date > start_date and change_date < report_date:
                                 if not any(tmp['web_link'] == bug.web_link for tmp in bugs[user]):
                                     mybug = {}
                                     mybug['web_link'] = bug.web_link
                                     mybug['importance'] = task.importance
                                     mybug['tags'] = bug.bug.tags
-                                    mybug['fixed_date'] = fixed_date
+                                    mybug['change_date'] = change_date
+                                    mybug['status'] = bug.status
                                     bugs[user].append(mybug)
 
             # Getting info from LP may take forever, so let's use something like cache
