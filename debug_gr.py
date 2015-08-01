@@ -3,7 +3,6 @@ import argparse
 from pygerrit.rest import GerritRestAPI
 import datetime
 
-cachedir = "~/.launchpadlib/cache/"
 branch = 'master'
 
 parser = argparse.ArgumentParser(description='Debug LP bugs fixes stats.')
@@ -44,15 +43,17 @@ for gerrit in gerrits:
     for project in projects[gerrit]:
         changes = rest.get(template % (project, user))
         for change in changes:
-              if change['branch'] != branch or change['status'] == 'ABANDONED':
-                  continue
-              if change['created'] > start_date and change['created'] < report_date:
-                  if change['status'] == 'MERGED':
-                      print "Merged: %s" % (url[gerrit] % change['_number'])
-                      total_merged += 1
-                  else:
-                      print "Open: %s" % (url[gerrit] % change['_number'])
-                      total_open += 1
+            if args.debug:
+                print "checking %s review" % (url[gerrit] % change['_number'])
+            if change['branch'] != branch or change['status'] == 'ABANDONED':
+                continue
+            if change['created'] > start_date and change['created'] < report_date:
+                if change['status'] == 'MERGED':
+                    print "Merged: %s" % (url[gerrit] % change['_number'])
+                    total_merged += 1
+                else:
+                    print "Open: %s" % (url[gerrit] % change['_number'])
+                    total_open += 1
 
 print "TOTAL MERGED: %s" % total_merged
 print "TOTAL OPEN: %s" % total_open
