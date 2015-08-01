@@ -127,8 +127,6 @@ def main():
                 safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(last_week_bugs))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(fixes[ws][engineer]['merged']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 8, len(total_bugs))
-#                safe_method(worksheet.update_cell, cell.row, cell.col + 7, high_bugs)
-#                safe_method(worksheet.update_cell, cell.row, cell.col + 8, other_bugs)
 
 #########################
 
