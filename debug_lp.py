@@ -36,8 +36,8 @@ if args.debug:
 list_of_bugs = p.searchTasks(status=["In Progress", "Fix Committed", "Fix Released"],
                      modified_since=start_date)
 
-fixed = 0
-inprogress = 0
+fixed = []
+inprogress = []
 for bug in list_of_bugs:
     if bug.milestone == None:
         continue
@@ -60,15 +60,16 @@ for bug in list_of_bugs:
                    if bug.status == "Fix Released":
                        fixed_date = str(task.date_fix_released)
                    if fixed_date > start_date and fixed_date < report_date:
-                       info = str(task.importance)
-                       if 'tricky' in bug.bug.tags:
-                           info.append(', Tricky')
-                       print "[%s] %s %s" % (bug.status, info, bug.web_link)
-                       if bug.status == "In Progress":
-                           inprogress += 1
-                       else:
-                           fixed += 1
+                       if bug.web_link not in fixed and bug.web_link not in inprogress:
+                           info = str(task.importance)
+                           if 'tricky' in bug.bug.tags:
+                               info.append(', Tricky')
+                           print "[%s] %s %s" % (bug.status, info, bug.web_link)
+                           if bug.status == "In Progress":
+                               inprogress.append(bug.web_link)
+                           else:
+                               fixed.append(bug.web_link)
 
-print "TOTAL IN PROGRESS between %s and %s : %s" % (start_date, report_date, inprogress)
-print "TOTAL FIXED between %s and %s       : %s" % (start_date, report_date, fixed)
+print "TOTAL IN PROGRESS between %s and %s : %s" % (start_date, report_date, len(inprogress))
+print "TOTAL FIXED between %s and %s       : %s" % (start_date, report_date, len(fixed))
 
