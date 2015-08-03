@@ -66,7 +66,7 @@ def main():
     patches_worksheet_list = patches_sh.worksheets()
     patches_worksheets = {}
     for worksheet in patches_worksheet_list:
-        if worksheet.title == 'template':
+        if worksheet.title != 'bugfix-team':
             continue
         # getting list of engineers from worksheet
         patches_worksheets[worksheet.title] = []
@@ -103,6 +103,7 @@ def main():
                 last_week_bugs = []
                 inprogress_bugs = []
                 total_bugs = []
+                print "\nChecking bugs for %s" % engineer
                 for bug in bugs_last[ws][engineer] + bugs_cur[ws][engineer]:
                     print "%s %s %s %s" % (bug['web_link'], bug['importance'], bug['status'], bug['change_date'])
                     if bug['importance'] in ['Critical', 'High']:
@@ -116,17 +117,23 @@ def main():
                             if bug['status'] in ["Fix Committed", "Fix Released"]:
                                 total_bugs.append(bug['web_link'])
                                 last_week_bugs.append(bug['web_link'])
+                            elif bug['status'] == "In Progress":
+                                inprogress_bugs.append(bug['web_link'])
                         else:
-                            total_bugs.append(bug['web_link'])
+                            if bug['status'] in ["Fix Committed", "Fix Released"]:
+                                total_bugs.append(bug['web_link'])
+                            elif bug['status'] == "In Progress":
+                                inprogress_bugs.append(bug['web_link'])
 
-                print "Updating worksheet info for %s" % engineer
+                print "\nUpdating worksheet info for %s" % engineer
+                print total_bugs
                 cell = safe_method(worksheet.find, engineer)
                 safe_method(worksheet.update_cell, cell.row, cell.col + 1, len(fixes[ws][engineer]['open_this_week']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 2, len(fixes[ws][engineer]['merged_this_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 3, len(inprogress_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 4, len(current_week_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 5, len(fixes[ws][engineer]['merged_last_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(last_week_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 3, len(current_week_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 4, len(fixes[ws][engineer]['merged_last_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 5, len(last_week_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(inprogress_bugs))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(fixes[ws][engineer]['merged']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 8, len(total_bugs))
 
