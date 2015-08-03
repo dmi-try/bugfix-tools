@@ -106,7 +106,7 @@ def main():
                 for bug in bugs_last[ws][engineer] + bugs_cur[ws][engineer]:
                     print "%s %s %s %s" % (bug['web_link'], bug['importance'], bug['status'], bug['change_date'])
                     if bug['importance'] in ['Critical', 'High']:
-                        if bug['change_date'][:10] >= last_sun.strftime('%Y-%m-%d'):
+                        if bug['change_date'][:10] >= last_mon.strftime('%Y-%m-%d'):
                             if bug['status'] in ["Fix Committed", "Fix Released"]:
                                 total_bugs.append(bug['web_link'])
                                 current_week_bugs.append(bug['web_link'])
