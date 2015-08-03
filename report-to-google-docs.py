@@ -118,14 +118,14 @@ def main():
                 print "\nUpdating worksheet info for %s" % engineer
                 print total_bugs
                 cell = safe_method(worksheet.find, engineer)
-                safe_method(worksheet.update_cell, cell.row, cell.col + 1, len(fixes[ws][engineer]['open_this_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 2, len(fixes[ws][engineer]['merged_this_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 3, len(current_week_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 4, len(fixes[ws][engineer]['merged_last_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 5, len(last_week_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(inprogress_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(fixes[ws][engineer]['merged']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 8, len(total_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 2, len(fixes[ws][engineer]['open_this_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 3, len(fixes[ws][engineer]['merged_this_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 4, len(current_week_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 5, len(fixes[ws][engineer]['merged_last_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(last_week_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(inprogress_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 8, len(fixes[ws][engineer]['merged']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 9, len(total_bugs))
 
 #########################
 
