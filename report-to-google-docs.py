@@ -66,7 +66,7 @@ def main():
     patches_worksheet_list = patches_sh.worksheets()
     patches_worksheets = {}
     for worksheet in patches_worksheet_list:
-        if worksheet.title == 'template':
+        if worksheet.title in ['summary', 'template']:
             continue
         # getting list of engineers from worksheet
         patches_worksheets[worksheet.title] = []
