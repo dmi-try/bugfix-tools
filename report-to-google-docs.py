@@ -5,6 +5,7 @@ import sys
 from gerrit import GerritUsers
 from lp import LpUsers
 from oauth2client.client import SignedJwtAssertionCredentials
+from itertools import groupby
 
 start_date = '2015-06-22'
 branch = 'master'
@@ -70,8 +71,8 @@ def main():
             continue
         # getting list of engineers from worksheet
         patches_worksheets[worksheet.title] = []
-        engineers = worksheet.col_values(1)[2:-2]
-        patches_worksheets[worksheet.title].append(engineers)
+        engineers = [list(group) for k, group in groupby(worksheet.col_values(1)[2:], lambda x: x == "Total") if not k]
+        patches_worksheets[worksheet.title].append(engineers[0])
 
     # Let's gather gerrit and LP info now, it can take a while
     for ws in patches_worksheets:
