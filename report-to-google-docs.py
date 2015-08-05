@@ -37,8 +37,7 @@ def safe_method(method, *args):
 
 def main():
     fixes = {}
-    bugs_cur = {}
-    bugs_last = {}
+    bugs = {}
     parser = argparse.ArgumentParser(description='Deploy OpenStack and run Fuel health check.')
     parser.add_argument('report_date', type=str, help="Report date.", nargs='?',
             default = datetime.datetime.now().strftime("%Y-%m-%d"))
@@ -68,6 +67,7 @@ def main():
     patches_worksheets = {}
     for worksheet in patches_worksheet_list:
         if worksheet.title in ['summary', 'template']:
+#        if worksheet.title != 'partner':
             continue
         # getting list of engineers from worksheet
         patches_worksheets[worksheet.title] = []
@@ -82,10 +82,7 @@ def main():
             fixes[ws] = ppl.fixes(start_date, report_day.strftime('%Y-%m-%d'), branch, cachedir="/var/tmp/.gerrit")
             print "Gathering LP bugs fixed info for '%s' worksheet, engineers: %s" % (ws, engineers)
             lp_ppl = LpUsers(engineers, login = args.login)
-            # Get info from start to last Sun and cache it for future
-            bugs_last[ws] = lp_ppl.bugs(start_date, last_mon.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.launchpadlib')
-            # Get info for current week and cache it separately
-            bugs_cur[ws] = lp_ppl.bugs(last_sun.strftime('%Y-%m-%d'), report_day.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.curlaunchpadlib')
+            bugs[ws] = lp_ppl.bugs(start_date, report_day.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.launchpadlib')
 
     # Another login session with our Google account to avoid 502 errors due to timeouts
     second_gc = gspread.authorize(credentials)
@@ -104,9 +101,10 @@ def main():
                 last_week_bugs = []
                 inprogress_bugs = []
                 total_bugs = []
+                unresolved_bugs = []
                 print "\nChecking bugs for %s" % engineer
-                for bug in bugs_last[ws][engineer] + bugs_cur[ws][engineer]:
-                    print "%s %s %s %s" % (bug['web_link'], bug['importance'], bug['status'], bug['change_date'])
+                for bug in bugs[ws][engineer]:
+                    print "%s [%s] [%s] %s" % (bug['web_link'], bug['importance'], bug['status'], bug['change_date'])
                     if bug['status'] in ["Fix Committed", "Fix Released"]:
                         if bug['change_date'][:10] >= last_mon.strftime('%Y-%m-%d'):
                             current_week_bugs.append(bug['web_link'])
@@ -115,6 +113,8 @@ def main():
                         total_bugs.append(bug['web_link'])
                     elif bug['status'] == "In Progress":
                         inprogress_bugs.append(bug['web_link'])
+                    elif bug['status'] in ["New", "Confirmed", "Triaged"]:
+                        unresolved_bugs.append(bug['web_link'])
 
                 print "\nUpdating worksheet info for %s" % engineer
                 print total_bugs

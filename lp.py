@@ -41,7 +41,9 @@ class LpUsers:
             # Don't fail if user does not exist in LP. We'll just put 0 bug fixed for such users.
             try:
                 p = self.launchpad.people.getByEmail(email="%s@mirantis.com" % user)
-                list_of_bugs = p.searchTasks(status=["In Progress", "Fix Committed", "Fix Released"],
+                list_of_bugs = p.searchTasks(status=["New", "Incomplete", "Invalid",
+                                         "Won't Fix", "Confirmed", "Triaged",
+                                         "In Progress", "Fix Committed", "Fix Released"],
                                      modified_since=start_date)
             except:
                 continue
@@ -62,6 +64,16 @@ class LpUsers:
                                 change_date = str(task.date_fix_committed)
                             if bug.status == "Fix Released":
                                 change_date = str(task.date_fix_released)
+                            if bug.status == "Confirmed":
+                                change_date = str(task.date_confirmed)
+                            if bug.status == "Triaged":
+                                change_date = str(task.date_triaged)
+                            if bug.status == "Incomplete":
+                                change_date = str(task.date_incomplete)
+                            if bug.status == "New":
+                                change_date = str(task.date_created)
+                            if bug.status in ["Won't Fix", "Invalid"]:
+                                change_date = str(task.date_closed)
                             if change_date > start_date and change_date < report_date:
                                 if not any(tmp['web_link'] == bug.web_link for tmp in bugs[user]):
                                     mybug = {}
