@@ -2,3 +2,4 @@
 .google_key.pem
 *.pyc
 zzz.*
+run.sh

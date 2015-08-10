@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import datetime
 import argparse
 import gspread
@@ -67,7 +68,7 @@ def main():
     patches_worksheets = {}
     for worksheet in patches_worksheet_list:
         if worksheet.title in ['summary', 'template']:
-#        if worksheet.title != 'partner':
+#        if worksheet.title != 'bugfix-team':
             continue
         # getting list of engineers from worksheet
         patches_worksheets[worksheet.title] = []
@@ -122,11 +123,12 @@ def main():
                 safe_method(worksheet.update_cell, cell.row, cell.col + 2, len(fixes[ws][engineer]['open_this_week']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 3, len(fixes[ws][engineer]['merged_this_week']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 4, len(current_week_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 5, len(fixes[ws][engineer]['merged_last_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(last_week_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(inprogress_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 8, len(fixes[ws][engineer]['merged']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 9, len(total_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(fixes[ws][engineer]['merged_last_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(last_week_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 8, len(unresolved_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 9, len(inprogress_bugs))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 10, len(fixes[ws][engineer]['merged']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 11, len(total_bugs))
 
 #########################
 
