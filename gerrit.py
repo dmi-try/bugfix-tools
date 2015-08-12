@@ -14,9 +14,15 @@ engineers['partner'] = ['aarzhanov', 'igajsin']
 
 ##########################
 class GerritUsers:
-    def __init__(self, users, url = 'https://review.openstack.org'):
+    def __init__(self, users, gerrit = 'https://review.openstack.org',
+            projects = ['^stackforge/fuel-.*', '^stackforge/python-fuel.*'],
+            template = '/changes/?q=project:%s+owner:".*<%s@mirantis.com>"+message:"bug:+"',
+            url = 'https://review.openstack.org/#/c/%s'):
         self.users = users
-        self.rest = GerritRestAPI(url=url)
+        self.rest = GerritRestAPI(url=gerrit)
+        self.projects = projects
+        self.template = template
+        self.url = url
 
     def fixes(self, start_date, report_date, branch, cachedir = "~/.gerrit"):
         fixes = {}
@@ -24,10 +30,6 @@ class GerritUsers:
         last_sun = report_day - datetime.timedelta(days=report_day.weekday()) + \
                 datetime.timedelta(days=6, weeks=-1)
         prelast_sun = last_sun - datetime.timedelta(weeks=1)
-
-        projects = ['^stackforge/fuel-.*', '^stackforge/python-fuel.*']
-        template = '/changes/?q=project:%s+owner:".*<%s@mirantis.com>"+message:"bug:+"'
-        url = 'https://review.openstack.org/#/c/%s'
 
         for user in self.users:
             fixes[user] = {}
@@ -45,9 +47,9 @@ class GerritUsers:
             except:
                 pass
 
-            for project in projects:
+            for project in self.projects:
                 try:
-                    changes = self.rest.get(template % (project, user))
+                    changes = self.rest.get(self.template % (project, user))
                 except:
                     changes = []
                 for change in changes:
@@ -55,14 +57,14 @@ class GerritUsers:
                         continue
                     if change['created'] > start_date and change['created'] < report_date:
                         if change['status'] == 'MERGED':
-                            fixes[user]['merged'].append(url % change['_number'])
+                            fixes[user]['merged'].append(self.url % change['_number'])
                             if change['updated'][:10] > str(last_sun)[:10]:
-                                fixes[user]['merged_this_week'].append(url % change['_number'])
+                                fixes[user]['merged_this_week'].append(self.url % change['_number'])
                             elif change['created'][:10] > str(prelast_sun)[:10]:
-                                fixes[user]['merged_last_week'].append(url % change['_number'])
+                                fixes[user]['merged_last_week'].append(self.url % change['_number'])
                         else:
                             if change['created'][:10] > str(last_sun)[:10]:
-                                fixes[user]['open_this_week'].append(url % change['_number'])
+                                fixes[user]['open_this_week'].append(self.url % change['_number'])
 
             # Let's use something like cache to no overload gerrit API and improve performance
             try:

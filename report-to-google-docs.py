@@ -38,6 +38,8 @@ def safe_method(method, *args):
 
 def main():
     fixes = {}
+    os_fixes = {}
+    infra_fixes = {}
     bugs = {}
     parser = argparse.ArgumentParser(description='Deploy OpenStack and run Fuel health check.')
     parser.add_argument('report_date', type=str, help="Report date.", nargs='?',
@@ -80,7 +82,12 @@ def main():
         for engineers in patches_worksheets[ws]:
             print "Gathering gerrit reviews info for '%s' worksheet, engineers: %s" % (ws, engineers)
             ppl = GerritUsers(engineers)
-            fixes[ws] = ppl.fixes(start_date, report_day.strftime('%Y-%m-%d'), branch, cachedir="/var/tmp/.gerrit")
+            os_fixes[ws] = ppl.fixes(start_date, report_day.strftime('%Y-%m-%d'), branch, cachedir="/var/tmp/.gerrit")
+            ppl = GerritUsers(engineers,
+                    gerrit = 'https://review.fuel-infra.org',
+                    projects = ['^.*'],
+                    url = 'https://review.fuel-infra.org/#/c/%s')
+            infra_fixes[ws] = ppl.fixes(start_date, report_day.strftime('%Y-%m-%d'), branch, cachedir="/var/tmp/.infra-gerrit")
             print "Gathering LP bugs fixed info for '%s' worksheet, engineers: %s" % (ws, engineers)
             lp_ppl = LpUsers(engineers, login = args.login)
             bugs[ws] = lp_ppl.bugs(start_date, report_day.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.launchpadlib')
@@ -116,18 +123,32 @@ def main():
                         inprogress_bugs.append(bug['web_link'])
                     elif bug['status'] in ["New", "Confirmed", "Triaged"]:
                         unresolved_bugs.append(bug['web_link'])
-
+                # calculating reviews
+                fixes['open_this_week'] = os_fixes[ws][engineer]['open_this_week'] + \
+                        infra_fixes[ws][engineer]['open_this_week']
+                fixes['merged_this_week'] = os_fixes[ws][engineer]['merged_this_week'] + \
+                        infra_fixes[ws][engineer]['merged_this_week']
+                fixes['merged_last_week'] = os_fixes[ws][engineer]['merged_last_week'] + \
+                        infra_fixes[ws][engineer]['merged_last_week']
+                fixes['merged'] = os_fixes[ws][engineer]['merged'] + \
+                        infra_fixes[ws][engineer]['merged']
                 print "\nUpdating worksheet info for %s" % engineer
-                print total_bugs
+                print "Bugs this week: %s" % current_week_bugs
+                print "Bugs last week: %s" % last_week_bugs
+                print "Bugs total: %s" % total_bugs
+                print "Reviews open_this_week: %s" % fixes['open_this_week']
+                print "Reviews merged_this_week: %s" % fixes['merged_this_week']
+                print "Reviews merged_last_week: %s" % fixes['merged_last_week']
+                print "Reviews merged total: %s" % fixes['merged']
                 cell = safe_method(worksheet.find, engineer)
-                safe_method(worksheet.update_cell, cell.row, cell.col + 2, len(fixes[ws][engineer]['open_this_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 3, len(fixes[ws][engineer]['merged_this_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 2, len(fixes['open_this_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 3, len(fixes['merged_this_week']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 4, len(current_week_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(fixes[ws][engineer]['merged_last_week']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(fixes['merged_last_week']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(last_week_bugs))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 8, len(unresolved_bugs))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 9, len(inprogress_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 10, len(fixes[ws][engineer]['merged']))
+                safe_method(worksheet.update_cell, cell.row, cell.col + 10, len(fixes['merged']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 11, len(total_bugs))
 
 #########################
