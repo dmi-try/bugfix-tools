@@ -60,10 +60,8 @@ class LpUsers:
                         if milestone == ms:
                             if bug.status == "In Progress":
                                 change_date = str(task.date_in_progress)
-                            if bug.status == "Fix Committed":
+                            if bug.status in ["Fix Committed", "Fix Released"]:
                                 change_date = str(task.date_fix_committed)
-                            if bug.status == "Fix Released":
-                                change_date = str(task.date_fix_released)
                             if bug.status == "Confirmed":
                                 change_date = str(task.date_confirmed)
                             if bug.status == "Triaged":
