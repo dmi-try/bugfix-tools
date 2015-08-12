@@ -14,7 +14,7 @@ ms = '7.0'
 
 # Email of our google service account
 ServiceAccountEmail = '337224127279-i9p9npr0mnuniabislf5k87r8cjjml4e@developer.gserviceaccount.com'
-# Source of users
+# KPI Spreadsheet key
 SpreadsheetKey = '1xx0JxeU4ySdIKckU2jyar6zplAz6RNj0jukRJkcCgOM'
 
 # Google service account OAuth2 credentials
@@ -36,6 +36,7 @@ def safe_method(method, *args):
         except:
             pass
 
+#########################
 def main():
     fixes = {}
     os_fixes = {}
@@ -47,8 +48,7 @@ def main():
     parser.add_argument("-l", "--login", help="Login", action="store_true")
     args = parser.parse_args()
 
-    # Let's caclulate report dates, we need fridays since we publish bugfix report on fridays
-    # but we use saturday as report_date in order to use '<' in date strings comparision.
+    # Let's caclulate report dates
     report_day = datetime.datetime.strptime(args.report_date, '%Y-%m-%d')
     last_sun = report_day - datetime.timedelta(days=report_day.weekday()) + \
             datetime.timedelta(days=6, weeks=-1)
@@ -77,7 +77,7 @@ def main():
         engineers = [list(group) for k, group in groupby(worksheet.col_values(1)[2:], lambda x: x == "Total") if not k]
         patches_worksheets[worksheet.title].append(engineers[0])
 
-    # Let's gather gerrit and LP info now, it can take a while
+    # Let's gather gerrit and LP info now, it can take a while if not yet cached
     for ws in patches_worksheets:
         for engineers in patches_worksheets[ws]:
             print "Gathering gerrit reviews info for '%s' worksheet, engineers: %s" % (ws, engineers)
@@ -132,6 +132,8 @@ def main():
                         infra_fixes[ws][engineer]['merged_last_week']
                 fixes['merged'] = os_fixes[ws][engineer]['merged'] + \
                         infra_fixes[ws][engineer]['merged']
+                # Printing some info for debug/troubleshooting
+                # TODO: re-do all the printing via logger
                 print "\nUpdating worksheet info for %s" % engineer
                 print "Bugs this week: %s" % current_week_bugs
                 print "Bugs last week: %s" % last_week_bugs
@@ -140,6 +142,7 @@ def main():
                 print "Reviews merged_this_week: %s" % fixes['merged_this_week']
                 print "Reviews merged_last_week: %s" % fixes['merged_last_week']
                 print "Reviews merged total: %s" % fixes['merged']
+                # Updating cells in worksheet
                 cell = safe_method(worksheet.find, engineer)
                 safe_method(worksheet.update_cell, cell.row, cell.col + 2, len(fixes['open_this_week']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 3, len(fixes['merged_this_week']))
