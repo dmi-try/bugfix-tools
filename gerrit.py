@@ -1,6 +1,7 @@
 from pygerrit.rest import GerritRestAPI
 import datetime
 import pickle
+import re
 
 start_date = '2015-06-22'
 report_date = '2015-07-25'
@@ -53,7 +54,7 @@ class GerritUsers:
                 except:
                     changes = []
                 for change in changes:
-                    if change['branch'] != branch or change['status'] == 'ABANDONED':
+                    if not re.search(branch, change['branch']) or change['status'] == 'ABANDONED':
                         continue
                     if change['created'] > start_date and change['created'] < report_date:
                         if change['status'] == 'MERGED':

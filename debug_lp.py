@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import datetime
 import argparse
+import sys
 from launchpadlib.launchpad import Launchpad
 
 cachedir = "~/.launchpadlib/cache/"
@@ -10,6 +11,7 @@ parser = argparse.ArgumentParser(description='Debug LP bugs fixes stats.')
 parser.add_argument('user', type=str, help="Mirantis username")
 parser.add_argument("-d", "--debug", help="Additional debug", action="store_true")
 parser.add_argument("-l", "--login", help="Login", action="store_true")
+parser.add_argument("-u", "--uid", help="Get LP user ID", action="store_true")
 parser.add_argument('--start-date', type=str, help="Report start date.",
         default = datetime.datetime.now().strftime("%Y-%m-%d"))
 parser.add_argument('--report-date', type=str, help="Report end date.",
@@ -30,6 +32,10 @@ if args.debug:
 
 p = launchpad.people.getByEmail(email="%s@mirantis.com" % user)
 
+if args.uid:
+    print p.name
+    sys.exit(0)
+
 if args.debug:
     print "Found user %s (%s)" % (p.display_name, p.name)
 
@@ -45,7 +51,6 @@ inprogress = []
 for bug in list_of_bugs:
     if bug.milestone == None:
         continue
-    print bug.web_link
     project = '{0}'.format(bug.milestone).split('/')[-3]
     bug_milestone = '{0}'.format(bug.milestone).split('/')[-1]
     if project not in ['fuel', 'mos']:

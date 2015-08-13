@@ -9,7 +9,6 @@ from oauth2client.client import SignedJwtAssertionCredentials
 from itertools import groupby
 
 start_date = '2015-06-22'
-branch = 'master'
 ms = '7.0'
 
 # Email of our google service account
@@ -82,12 +81,12 @@ def main():
         for engineers in patches_worksheets[ws]:
             print "Gathering gerrit reviews info for '%s' worksheet, engineers: %s" % (ws, engineers)
             ppl = GerritUsers(engineers)
-            os_fixes[ws] = ppl.fixes(start_date, report_day.strftime('%Y-%m-%d'), branch, cachedir="/var/tmp/.gerrit")
+            os_fixes[ws] = ppl.fixes(start_date, report_day.strftime('%Y-%m-%d'), branch='master', cachedir="/var/tmp/.gerrit")
             ppl = GerritUsers(engineers,
                     gerrit = 'https://review.fuel-infra.org',
                     projects = ['^.*'],
                     url = 'https://review.fuel-infra.org/#/c/%s')
-            infra_fixes[ws] = ppl.fixes(start_date, report_day.strftime('%Y-%m-%d'), branch, cachedir="/var/tmp/.infra-gerrit")
+            infra_fixes[ws] = ppl.fixes(start_date, report_day.strftime('%Y-%m-%d'), branch='.*', cachedir="/var/tmp/.infra-gerrit")
             print "Gathering LP bugs fixed info for '%s' worksheet, engineers: %s" % (ws, engineers)
             lp_ppl = LpUsers(engineers, login = args.login)
             bugs[ws] = lp_ppl.bugs(start_date, report_day.strftime('%Y-%m-%d'), ms, cachedir='/var/tmp/.launchpadlib')

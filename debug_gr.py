@@ -2,8 +2,8 @@
 import argparse
 from pygerrit.rest import GerritRestAPI
 import datetime
+import re
 
-branch = 'master'
 
 parser = argparse.ArgumentParser(description='Debug LP bugs fixes stats.')
 parser.add_argument('user', type=str, help="Mirantis username")
@@ -32,6 +32,9 @@ projects['https://review.openstack.org'] = ['^stackforge/fuel-.*', '^stackforge/
 projects['https://review.fuel-infra.org'] = ['^.*']
 url['https://review.openstack.org'] = 'https://review.openstack.org/#/c/%s'
 url['https://review.fuel-infra.org'] = 'https://review.fuel-infra.org/#/c/%s'
+branch = {}
+branch['https://review.openstack.org'] = 'master'
+branch['https://review.fuel-infra.org'] = '.*'
 
 total_merged = 0
 total_open = 0
@@ -48,7 +51,7 @@ for gerrit in gerrits:
         for change in changes:
             if args.debug:
                 print "checking %s review" % (url[gerrit] % change['_number'])
-            if change['branch'] != branch or change['status'] == 'ABANDONED':
+            if not re.search(branch[gerrit], change['branch']) or change['status'] == 'ABANDONED':
                 continue
             if change['created'] > start_date and change['created'] < report_date:
                 if change['status'] == 'MERGED':
