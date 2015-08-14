@@ -111,8 +111,8 @@ def main():
         safe_method(worksheet.update_cell, 1, 1, "Updated on: %s UTC" % report_date.strftime("%Y-%m-%d %H:%M"))
         for engineers in patches_worksheets[ws]:
             for engineer in engineers:
-                # updating info for every engineer
-                # calculating bugs
+                # Updating info for every engineer
+                # Calculating bugs
                 current_week_bugs = []
                 last_week_bugs = []
                 inprogress_bugs = []
@@ -131,7 +131,8 @@ def main():
                         inprogress_bugs.append(bug['web_link'])
                     elif bug['status'] in ["New", "Confirmed", "Triaged"]:
                         unresolved_bugs.append(bug['web_link'])
-                # calculating reviews
+
+                # Calculating reviews
                 fixes['open_this_week'] = os_fixes[ws][engineer]['open_this_week'] + \
                         infra_fixes[ws][engineer]['open_this_week']
                 fixes['merged_this_week'] = os_fixes[ws][engineer]['merged_this_week'] + \
@@ -140,6 +141,7 @@ def main():
                         infra_fixes[ws][engineer]['merged_last_week']
                 fixes['merged'] = os_fixes[ws][engineer]['merged'] + \
                         infra_fixes[ws][engineer]['merged']
+
                 # Printing some info for debug/troubleshooting
                 # TODO: re-do all the printing via logger
                 print "\nUpdating worksheet info for %s" % engineer
@@ -155,7 +157,7 @@ def main():
                 cell = safe_method(worksheet.find, engineer)
                 cell_list = safe_method(worksheet.range, 'A%s:L%s' % (cell.row, cell.row))
 
-                # move allocation to last week on Mondays
+                # Copy allocation to the last week on Mondays
                 if weekday == 1:
                     cell_list[5].value = cell_list[1].value
 
