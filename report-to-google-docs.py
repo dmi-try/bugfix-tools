@@ -161,7 +161,7 @@ def main():
                 safe_method(worksheet.update_cell, cell.row, cell.col + 10, len(fixes['merged']))
                 safe_method(worksheet.update_cell, cell.row, cell.col + 11, len(total_bugs))
 
-    print "Finished at: %s" % datetime.datetime.now()
+    print "Finished at: %s" % datetime.datetime.now(pytz.utc)
 
 #########################
 
