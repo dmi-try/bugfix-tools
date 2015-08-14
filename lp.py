@@ -55,32 +55,31 @@ class LpUsers:
                 bug_milestone = '{0}'.format(bug.milestone).split('/')[-1]
                 if project not in projects:
                     continue
-                for task in bug.bug.bug_tasks:
-                    milestone = '{0}'.format(task.milestone_link).split('/')[-1]
-                    if milestone == ms:
-                        if bug.status == "In Progress":
-                            change_date = str(task.date_in_progress)
-                        if bug.status in ["Fix Committed", "Fix Released"]:
-                            change_date = str(task.date_fix_committed)
-                        if bug.status == "Confirmed":
-                            change_date = str(task.date_confirmed)
-                        if bug.status == "Triaged":
-                            change_date = str(task.date_triaged)
-                        if bug.status == "Incomplete":
-                            change_date = str(task.date_incomplete)
-                        if bug.status == "New":
-                            change_date = str(task.date_created)
-                        if bug.status in ["Won't Fix", "Invalid"]:
-                            change_date = str(task.date_closed)
-                        if change_date > start_date and change_date < report_date:
-                            if not any(tmp['web_link'] == bug.web_link for tmp in bugs[user]):
-                                mybug = {}
-                                mybug['web_link'] = bug.web_link
-                                mybug['importance'] = task.importance
-                                mybug['tags'] = bug.bug.tags
-                                mybug['change_date'] = change_date
-                                mybug['status'] = bug.status
-                                bugs[user].append(mybug)
+                milestone = '{0}'.format(bug.milestone_link).split('/')[-1]
+                if milestone == ms:
+                    if bug.status == "In Progress":
+                        change_date = str(bug.date_in_progress)
+                    if bug.status in ["Fix Committed", "Fix Released"]:
+                        change_date = str(bug.date_fix_committed)
+                    if bug.status == "Confirmed":
+                        change_date = str(bug.date_confirmed)
+                    if bug.status == "Triaged":
+                        change_date = str(bug.date_triaged)
+                    if bug.status == "Incomplete":
+                        change_date = str(bug.date_incomplete)
+                    if bug.status == "New":
+                        change_date = str(bug.date_created)
+                    if bug.status in ["Won't Fix", "Invalid"]:
+                        change_date = str(bug.date_closed)
+                    if change_date > start_date and change_date < report_date:
+                        if not any(tmp['web_link'] == bug.web_link for tmp in bugs[user]):
+                            mybug = {}
+                            mybug['web_link'] = bug.web_link
+                            mybug['importance'] = bug.importance
+                            mybug['tags'] = bug.bug.tags
+                            mybug['change_date'] = change_date
+                            mybug['status'] = bug.status
+                            bugs[user].append(mybug)
 
             # Getting info from LP may take forever, so let's use something like cache
             try:

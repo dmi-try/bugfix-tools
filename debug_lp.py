@@ -59,25 +59,24 @@ for bug in list_of_bugs:
         print "Checking bug %s, project %s, milestone %s, assignee %s" % (bug.web_link, project, bug_milestone, bug.assignee.name)
     if args.debug:
         print "Found bug assigned to %s: %s" % (user, bug.web_link)
-    for task in bug.bug.bug_tasks:
-        milestone = '{0}'.format(task.milestone_link).split('/')[-1]
-        if milestone == ms:
-               if bug.status == "In Progress":
-                   fixed_date = str(task.date_in_progress)
-               if bug.status == "Fix Committed":
-                   fixed_date = str(task.date_fix_committed)
-               if bug.status == "Fix Released":
-                   fixed_date = str(task.date_fix_released)
-               if fixed_date > start_date and fixed_date < report_date:
-                   if bug.web_link not in fixed and bug.web_link not in inprogress:
-                       info = str(task.importance)
-                       if 'tricky' in bug.bug.tags:
-                           info.append(', Tricky')
-                       print "[%s] %s %s" % (bug.status, info, bug.web_link)
-                       if bug.status == "In Progress":
-                           inprogress.append(bug.web_link)
-                       else:
-                           fixed.append(bug.web_link)
+    milestone = '{0}'.format(bug.milestone_link).split('/')[-1]
+    if milestone == ms:
+        if bug.status == "In Progress":
+            fixed_date = str(bug.date_in_progress)
+        if bug.status == "Fix Committed":
+            fixed_date = str(bug.date_fix_committed)
+        if bug.status == "Fix Released":
+            fixed_date = str(bug.date_fix_released)
+        if fixed_date > start_date and fixed_date < report_date:
+            if bug.web_link not in fixed and bug.web_link not in inprogress:
+                info = str(bug.importance)
+                if 'tricky' in bug.bug.tags:
+                    info.append(', Tricky')
+                print "[%s] %s %s" % (bug.status, info, bug.web_link)
+                if bug.status == "In Progress":
+                    inprogress.append(bug.web_link)
+                else:
+                    fixed.append(bug.web_link)
 
 print "TOTAL IN PROGRESS between %s and %s : %s" % (start_date, report_date, len(inprogress))
 print "TOTAL FIXED between %s and %s       : %s" % (start_date, report_date, len(fixed))
