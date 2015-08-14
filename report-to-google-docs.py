@@ -158,7 +158,7 @@ def main():
                 cell_list = safe_method(worksheet.range, 'A%s:L%s' % (cell.row, cell.row))
 
                 # Copy allocation to the last week on Mondays
-                if weekday == 1:
+                if weekday == 0:
                     cell_list[5].value = cell_list[1].value
 
                 cell_list[2].value = len(fixes['open_this_week'])
