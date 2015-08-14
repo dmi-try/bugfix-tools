@@ -50,6 +50,7 @@ def main():
     args = parser.parse_args()
 
     # Let's caclulate report dates
+    weekday = datetime.datetime.today().weekday()
     if args.report_date == "current":
         report_date = datetime.datetime.now(pytz.utc)
     else:
@@ -77,7 +78,7 @@ def main():
     patches_worksheets = {}
     for worksheet in patches_worksheet_list:
         if worksheet.title in ['summary', 'template']:
-#        if worksheet.title != 'bugfix-team':
+#        if worksheet.title != 'template':
             continue
         # getting list of engineers from worksheet
         patches_worksheets[worksheet.title] = []
@@ -149,17 +150,27 @@ def main():
                 print "Reviews merged_this_week: %s" % fixes['merged_this_week']
                 print "Reviews merged_last_week: %s" % fixes['merged_last_week']
                 print "Reviews merged total: %s" % fixes['merged']
-                # Updating cells in worksheet
+
+                # Updating worksheet for engineer
                 cell = safe_method(worksheet.find, engineer)
-                safe_method(worksheet.update_cell, cell.row, cell.col + 2, len(fixes['open_this_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 3, len(fixes['merged_this_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 4, len(current_week_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 6, len(fixes['merged_last_week']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 7, len(last_week_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 8, len(unresolved_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 9, len(inprogress_bugs))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 10, len(fixes['merged']))
-                safe_method(worksheet.update_cell, cell.row, cell.col + 11, len(total_bugs))
+                cell_list = safe_method(worksheet.range, 'A%s:L%s' % (cell.row, cell.row))
+
+                # move allocation to last week on Mondays
+                if weekday == 1:
+                    cell_list[5].value = cell_list[1].value
+
+                cell_list[2].value = len(fixes['open_this_week'])
+                cell_list[3].value = len(fixes['merged_this_week'])
+                cell_list[4].value = len(current_week_bugs)
+                cell_list[6].value = len(fixes['merged_last_week'])
+                cell_list[7].value = len(last_week_bugs)
+                cell_list[8].value = len(unresolved_bugs)
+                cell_list[9].value = len(inprogress_bugs)
+                cell_list[10].value = len(fixes['merged'])
+                cell_list[11].value = len(total_bugs)
+
+                # Update cells in batch
+                safe_method(worksheet.update_cells, cell_list)
 
     print "Finished at: %s" % datetime.datetime.now(pytz.utc)
 

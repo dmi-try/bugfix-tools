@@ -46,7 +46,7 @@ class LpUsers:
                     if bug.status in ["Won't Fix", "Invalid"]:
                         change_date = bug.date_closed
                     if change_date == None:
-                        print "ERROR FOUND: %s %s" % (bug.web_link, bug.status)
+                        print "ERROR FOUND: %s %s %s" % (bug.web_link, bug, bug.status)
                         continue
                     if change_date > start_date and change_date < report_date:
                         if not any(tmp['web_link'] == bug.web_link for tmp in bugs[user]):
