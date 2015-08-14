@@ -25,10 +25,9 @@ class GerritUsers:
         self.template = template
         self.url = url
 
-    def fixes(self, start_date, report_date, branch, cachedir = "~/.gerrit"):
+    def fixes(self, start_date, report_date, branch):
         fixes = {}
-        report_day = datetime.datetime.strptime(report_date, '%Y-%m-%d')
-        last_sun = report_day - datetime.timedelta(days=report_day.weekday()) + \
+        last_sun = report_date - datetime.timedelta(days=report_date.weekday()) + \
                 datetime.timedelta(days=6, weeks=-1)
         prelast_sun = last_sun - datetime.timedelta(weeks=1)
 
@@ -38,15 +37,6 @@ class GerritUsers:
             fixes[user]['merged_this_week'] = []
             fixes[user]['merged_last_week'] = []
             fixes[user]['open_this_week'] = []
-            # Let's use something like cache to no overload gerrit API and improve performance
-            cache_filename = "%s/%s_%s_%s_%s.grc" % (cachedir, user, report_date, start_date, branch)
-            try:
-                cache_file = open(cache_filename, 'rb')
-                fixes[user] = pickle.load(cache_file)
-                cache_file.close()
-                continue
-            except:
-                pass
 
             for project in self.projects:
                 try:
@@ -56,7 +46,7 @@ class GerritUsers:
                 for change in changes:
                     if not re.search(branch, change['branch']) or change['status'] == 'ABANDONED':
                         continue
-                    if change['created'] > start_date and change['created'] < report_date:
+                    if change['created'] > str(start_date) and change['created'] < str(report_date):
                         if change['status'] == 'MERGED':
                             fixes[user]['merged'].append(self.url % change['_number'])
                             if change['updated'][:10] > str(last_sun)[:10]:
@@ -66,14 +56,6 @@ class GerritUsers:
                         else:
                             if change['created'][:10] > str(last_sun)[:10]:
                                 fixes[user]['open_this_week'].append(self.url % change['_number'])
-
-            # Let's use something like cache to no overload gerrit API and improve performance
-            try:
-                cache_file = open(cache_filename, 'wb')
-                pickle.dump(fixes[user], cache_file)
-                cache_file.close()
-            except:
-                pass
 
         return fixes
 

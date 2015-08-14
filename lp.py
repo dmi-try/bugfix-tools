@@ -1,8 +1,5 @@
 from launchpadlib.launchpad import Launchpad
 import datetime
-import pickle
-
-print datetime.datetime.now()
 
 start_date = '2015-06-22'
 report_date = '2015-07-25'
@@ -22,22 +19,11 @@ class LpUsers:
         else:
             self.launchpad = Launchpad.login_anonymously('just testing', 'production', cachedir)
 
-    def bugs(self, start_date, report_date, ms, cachedir = "~/.launchpadlib/cache_reports/", projects = ['fuel', 'mos']):
+    def bugs(self, start_date, report_date, ms, projects = ['fuel', 'mos']):
         bugs = {}
-        one_week_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=1)
-        two_weeks_ago_date = datetime.datetime.strptime(report_date, '%Y-%m-%d') - datetime.timedelta(weeks=2)
 
         for user in self.users:
             bugs[user] = []
-            # Getting info from LP may take forever, so let's use something like cache
-            cache_filename = "%s/%s_%s_%s_%s.lpc" % (cachedir, user, report_date, start_date, ms)
-            try:
-                cache_file = open(cache_filename, 'rb')
-                bugs[user] = pickle.load(cache_file)
-                cache_file.close()
-                continue
-            except:
-                pass
             # Don't fail if user does not exist in LP. We'll just put 0 bug fixed for such users.
             try:
                 p = self.launchpad.people.getByEmail(email="%s@mirantis.com" % user)
@@ -52,25 +38,24 @@ class LpUsers:
                 if bug.milestone == None:
                     continue
                 project = '{0}'.format(bug.milestone).split('/')[-3]
-                bug_milestone = '{0}'.format(bug.milestone).split('/')[-1]
                 if project not in projects:
                     continue
-                milestone = '{0}'.format(bug.milestone_link).split('/')[-1]
+                milestone = '{0}'.format(bug.milestone).split('/')[-1]
                 if milestone == ms:
                     if bug.status == "In Progress":
-                        change_date = str(bug.date_in_progress)
+                        change_date = bug.date_in_progress
                     if bug.status in ["Fix Committed", "Fix Released"]:
-                        change_date = str(bug.date_fix_committed)
+                        change_date = bug.date_fix_committed
                     if bug.status == "Confirmed":
-                        change_date = str(bug.date_confirmed)
+                        change_date = bug.date_confirmed
                     if bug.status == "Triaged":
-                        change_date = str(bug.date_triaged)
+                        change_date = bug.date_triaged
                     if bug.status == "Incomplete":
-                        change_date = str(bug.date_incomplete)
+                        change_date = bug.date_incomplete
                     if bug.status == "New":
-                        change_date = str(bug.date_created)
+                        change_date = bug.date_created
                     if bug.status in ["Won't Fix", "Invalid"]:
-                        change_date = str(bug.date_closed)
+                        change_date = bug.date_closed
                     if change_date > start_date and change_date < report_date:
                         if not any(tmp['web_link'] == bug.web_link for tmp in bugs[user]):
                             mybug = {}
@@ -80,14 +65,6 @@ class LpUsers:
                             mybug['change_date'] = change_date
                             mybug['status'] = bug.status
                             bugs[user].append(mybug)
-
-            # Getting info from LP may take forever, so let's use something like cache
-            try:
-                cache_file = open(cache_filename, 'wb')
-                pickle.dump(bugs[user], cache_file)
-                cache_file.close()
-            except:
-                pass
 
         return bugs
 
