@@ -1,19 +1,8 @@
-from pygerrit.rest import GerritRestAPI
 import datetime
 import pickle
 import re
+from pygerrit.rest import GerritRestAPI
 
-start_date = '2015-06-22'
-report_date = '2015-07-25'
-branch = 'master'
-
-engineers = {}
-engineers['bugfix'] = ['adidenko', 'akislitsky', 'rprikhodchenko', 'agordeev',
-                 'omolchanov', 'ddmitriev', 'dilyin', 'vsharshov']
-engineers['service'] = ['mgrygoriev', 'sflorczak', 'pstefanski', 'tjaroszewski']
-engineers['partner'] = ['aarzhanov', 'igajsin']
-
-##########################
 class GerritUsers:
     def __init__(self, users, gerrit = 'https://review.openstack.org',
             projects = ['^stackforge/fuel-.*', '^stackforge/python-fuel.*'],
@@ -58,11 +47,3 @@ class GerritUsers:
                                 fixes[user]['open_this_week'].append(self.url % change['_number'])
 
         return fixes
-
-if __name__ == '__main__':
-    for group in engineers:
-        print "\n#####################"
-        print "# %s" % group
-        ppl = GerritUsers(engineers[group])
-        fixes = ppl.fixes(start_date, report_date, branch)
-

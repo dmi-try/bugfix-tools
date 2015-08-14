@@ -1,16 +1,6 @@
 from launchpadlib.launchpad import Launchpad
 import datetime
 
-start_date = '2015-06-22'
-report_date = '2015-07-25'
-ms = '7.0'
-
-engineers = {}
-engineers['bugfix'] = ['adidenko', 'akislitsky', 'rprikhodchenko', 'agordeev',
-                 'omolchanov', 'ddmitriev', 'dilyin', 'vsharshov']
-engineers['service'] = ['mgrygoriev', 'sflorczak', 'pstefanski', 'tjaroszewski']
-engineers['partner'] = ['aarzhanov', 'igajsin']
-
 class LpUsers:
     def __init__(self, users, cachedir = "~/.launchpadlib/cache/", login = False):
         self.users = users
@@ -67,15 +57,4 @@ class LpUsers:
                             bugs[user].append(mybug)
 
         return bugs
-
-if __name__ == '__main__':
-    for group in engineers:
-        print "\n#####################"
-        print "# %s" % group
-        ppl = LpUsers(engineers[group])
-        bugs = ppl.bugs(start_date, report_date, ms)
-        for user in bugs:
-            print len(bugs[user]['fixed'])
-            for bug in bugs[user]['fixed']:
-                print bug
 
