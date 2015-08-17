@@ -44,8 +44,9 @@ for gerrit in gerrits:
         print "Checking %s gerrit" % gerrit
     rest = GerritRestAPI(url=gerrit)
     for project in projects[gerrit]:
+        print "Getting changes for user"
         try:
-            changes = rest.get(template % (project, user))
+            changes = rest.get(template % (project, user), timeout=1)
         except:
             changes = []
         for change in changes:

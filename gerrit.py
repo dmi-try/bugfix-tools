@@ -29,7 +29,7 @@ class GerritUsers:
 
             for project in self.projects:
                 try:
-                    changes = self.rest.get(self.template % (project, user))
+                    changes = self.rest.get(self.template % (project, user), timeout=1)
                 except:
                     changes = []
                 for change in changes:
