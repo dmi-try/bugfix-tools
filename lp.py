@@ -5,7 +5,7 @@ class LpUsers:
     def __init__(self, users, cachedir = "~/.launchpadlib/cache/", login = False):
         self.users = users
         if login:
-            self.launchpad = Launchpad.login_with('kpi bugfix', 'production', cachedir)
+            self.launchpad = Launchpad.login_with('kpi bugfix', 'production', cachedir, credentials_file = ".lp.token")
         else:
             self.launchpad = Launchpad.login_anonymously('just testing', 'production', cachedir)
 
