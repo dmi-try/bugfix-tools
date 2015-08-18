@@ -4,6 +4,7 @@ import argparse
 import gspread
 import sys
 import pytz
+import re
 from gerrit import GerritUsers
 from lp import LpUsers
 from oauth2client.client import SignedJwtAssertionCredentials
@@ -108,6 +109,7 @@ def main():
     for ws in patches_worksheets:
         # updating every worksheet
         worksheet = second_sh.worksheet(ws)
+        updated_on = safe_method(worksheet.cell, 1, 1).value
         safe_method(worksheet.update_cell, 1, 1, "Updated on: %s UTC" % report_date.strftime("%Y-%m-%d %H:%M"))
         for engineers in patches_worksheets[ws]:
             for engineer in engineers:
@@ -159,7 +161,11 @@ def main():
 
                 # Copy allocation to the last week on Mondays
                 if weekday == 0:
-                    cell_list[5].value = cell_list[1].value
+                    if re.search(report_date.strftime("%Y-%m-%d"), updated_on):
+                        print "Allocation should be already copied"
+                    else:
+                        print "Copying resource allocation"
+                        #cell_list[5].value = cell_list[1].value
 
                 cell_list[2].value = len(fixes['open_this_week'])
                 cell_list[3].value = len(fixes['merged_this_week'])

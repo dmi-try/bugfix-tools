@@ -2,4 +2,4 @@
 .google_key.pem
 *.pyc
 zzz.*
-run.sh
+run_report.sh
