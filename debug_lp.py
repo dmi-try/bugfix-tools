@@ -13,7 +13,7 @@ parser.add_argument("-d", "--debug", help="Additional debug", action="store_true
 parser.add_argument("-l", "--login", help="Login", action="store_true")
 parser.add_argument("-u", "--uid", help="Get LP user ID", action="store_true")
 parser.add_argument('--start-date', type=str, help="Report start date.",
-        default = datetime.datetime.now().strftime("%Y-%m-%d"))
+        default = '2015-06-22')
 parser.add_argument('--report-date', type=str, help="Report end date.",
         default = datetime.datetime.now().strftime("%Y-%m-%d"))
 
@@ -39,7 +39,8 @@ if args.uid:
 if args.debug:
     print "Found user %s (%s)" % (p.display_name, p.name)
 
-list_of_bugs = p.searchTasks(status=["In Progress", "Fix Committed", "Fix Released"],
+list_of_bugs = p.searchTasks(status=["In Progress", "Fix Committed", "Fix Released",
+    "New", "Confirmed", "Triaged"],
                      assignee=p,
                      modified_since=start_date)
 
@@ -48,6 +49,8 @@ if args.debug:
 
 fixed = []
 inprogress = []
+assigned = []
+
 for bug in list_of_bugs:
     if bug.milestone == None:
         continue
@@ -67,17 +70,28 @@ for bug in list_of_bugs:
             fixed_date = bug.date_fix_committed
         if bug.status == "Fix Released":
             fixed_date = bug.date_fix_released
-        if str(fixed_date) > start_date and str(fixed_date) < report_date:
-            if bug.web_link not in fixed and bug.web_link not in inprogress:
-                info = str(bug.importance)
-                if 'tricky' in bug.bug.tags:
-                    info.append(', Tricky')
-                print "[%s] %s %s - %s" % (bug.status, info, bug.web_link, fixed_date)
+        if bug.status in ["New", "Confirmed", "Triaged"]:
+            assigned.append(bug)
+        elif str(fixed_date) > start_date and str(fixed_date) < report_date:
+            if bug not in fixed and bug not in inprogress:
                 if bug.status == "In Progress":
-                    inprogress.append(bug.web_link)
+                    inprogress.append(bug)
                 else:
-                    fixed.append(bug.web_link)
+                    fixed.append(bug)
 
+line = "--------------------------------------------"
+print line
+for bug in fixed:
+    print "[%s] [%s] %s - %s" % (bug.status, ', '.join(bug.bug.tags), bug.web_link, fixed_date)
+print line
+for bug in inprogress:
+    print "[%s] [%s] %s - %s" % (bug.status, ', '.join(bug.bug.tags), bug.web_link, fixed_date)
+print line
+for bug in assigned:
+    print "[%s] [%s] %s" % (bug.status, ', '.join(bug.bug.tags), bug.web_link)
+
+print line
+print "TOTAL ASSIGNED                                      : %s" % len(assigned)
 print "TOTAL IN PROGRESS between %s and %s : %s" % (start_date, report_date, len(inprogress))
 print "TOTAL FIXED between %s and %s       : %s" % (start_date, report_date, len(fixed))
 
