@@ -59,11 +59,9 @@ for bug in list_of_bugs:
     if project not in ['fuel', 'mos']:
         continue
     if args.debug:
-        print "Checking bug %s, project %s, milestone %s, assignee %s" % (bug.web_link, project, bug_milestone, bug.assignee.name)
-    if args.debug:
-        print "Found bug assigned to %s: %s" % (user, bug.web_link)
-    milestone = '{0}'.format(bug.milestone_link).split('/')[-1]
-    if milestone == ms:
+        print "Checking bug %s, project %s, milestone %s, assignee %s, status %s" % \
+                (bug, project, bug_milestone, bug.assignee.name, bug.status)
+    if bug_milestone == ms:
         if bug.status == "In Progress":
             fixed_date = bug.date_in_progress
         if bug.status == "Fix Committed":
