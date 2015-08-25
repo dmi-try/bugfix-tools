@@ -1,5 +1,4 @@
 import datetime
-import pickle
 import re
 from pygerrit.rest import GerritRestAPI
 

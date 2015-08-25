@@ -70,7 +70,7 @@ for bug in list_of_bugs:
             fixed_date = bug.date_fix_released
         if bug.status in ["New", "Confirmed", "Triaged"]:
             assigned.append(bug)
-        elif str(fixed_date) > start_date and str(fixed_date) < report_date:
+        elif str(fixed_date)[:10] > start_date[:10] and str(fixed_date)[:10] <= report_date[:10]:
             if bug not in fixed and bug not in inprogress:
                 if bug.status == "In Progress":
                     inprogress.append(bug)

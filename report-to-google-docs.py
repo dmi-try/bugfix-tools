@@ -159,13 +159,13 @@ def main():
                 cell = safe_method(worksheet.find, engineer)
                 cell_list = safe_method(worksheet.range, 'A%s:L%s' % (cell.row, cell.row))
 
-                # Copy allocation to the last week on Mondays
+                # Copy allocation from current week to the last week on Mondays
                 if weekday == 0:
                     if re.search(report_date.strftime("%Y-%m-%d"), updated_on):
                         print "Allocation should be already copied"
                     else:
                         print "Copying resource allocation"
-                        #cell_list[5].value = cell_list[1].value
+                        cell_list[5].value = cell_list[1].value
 
                 cell_list[2].value = len(fixes['open_this_week'])
                 cell_list[3].value = len(fixes['merged_this_week'])
