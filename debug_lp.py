@@ -5,7 +5,6 @@ import sys
 from launchpadlib.launchpad import Launchpad
 
 cachedir = "~/.launchpadlib/cache/"
-ms = '7.0'
 
 parser = argparse.ArgumentParser(description='Debug LP bugs fixes stats.')
 parser.add_argument('user', type=str, help="Mirantis username")
@@ -16,11 +15,14 @@ parser.add_argument('--start-date', type=str, help="Report start date.",
         default = '2015-06-22')
 parser.add_argument('--report-date', type=str, help="Report end date.",
         default = datetime.datetime.now().strftime("%Y-%m-%d"))
+parser.add_argument('--milestone', type=str, help="Milestone.",
+        default = "7.0")
 
 args = parser.parse_args()
 user = args.user
 start_date = args.start_date
 report_date = args.report_date
+ms = args.milestone
 
 if args.login:
     launchpad = Launchpad.login_with('kpi debug', 'production', cachedir)
