@@ -28,7 +28,7 @@ gerrits = ['https://review.openstack.org', 'https://review.fuel-infra.org']
 template = '/changes/?q=project:%s+owner:".*<%s@mirantis.com>"+message:"bug:+"'
 projects = {}
 url ={}
-projects['https://review.openstack.org'] = ['^stackforge/fuel-.*', '^stackforge/python-fuel.*']
+projects['https://review.openstack.org'] = ['^openstack/fuel-.*', '^openstack/python-fuel.*']
 projects['https://review.fuel-infra.org'] = ['^.*']
 url['https://review.openstack.org'] = 'https://review.openstack.org/#/c/%s'
 url['https://review.fuel-infra.org'] = 'https://review.fuel-infra.org/#/c/%s'

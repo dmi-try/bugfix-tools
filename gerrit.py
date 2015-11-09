@@ -4,7 +4,7 @@ from pygerrit.rest import GerritRestAPI
 
 class GerritUsers:
     def __init__(self, users, gerrit = 'https://review.openstack.org',
-            projects = ['^stackforge/fuel-.*', '^stackforge/python-fuel.*'],
+            projects = ['^openstack/fuel-.*', '^openstack/python-fuel.*'],
             template = '/changes/?q=project:%s+owner:".*<%s@mirantis.com>"+message:"bug:+"',
             url = 'https://review.openstack.org/#/c/%s'):
         self.users = users
